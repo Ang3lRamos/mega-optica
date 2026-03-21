@@ -47,44 +47,25 @@ export interface VisualAcuity {
   oi_con_correccion_cercana: string
 }
 
-export interface ExternalExam {
-  od: string
-  oi: string
-}
-
-export interface CoverTest {
-  lejos: string
-  cerca: string
-}
-
-export interface Oftalmoscopia {
-  od: string
-  oi: string
-}
-
-export interface Queratometria {
-  od: string
-  oi: string
-}
-
-export interface Retinoscopia {
-  od: string
-  oi: string
-}
-
 export interface ClinicalRecord {
   id: string
   patient_id: string
   optometrist_id: string
   exam_date: string
   exam_type: ExamType
-  
+  consultation_reason: string | null
+
+  // Antecedentes personales
+  personal_history: string[]
+  personal_history_other: string | null
+  family_history: string[]
+  family_history_other: string | null
+
   // Antecedentes ocupacionales
   uses_protection: boolean
   protection_type: string | null
   time_in_job: string | null
-  
-  // Examen de agudeza visual anterior
+  occupational_exposures: string[]
   previous_exam: boolean
   previous_exam_date: string | null
   has_prescribed_lenses: boolean
@@ -93,40 +74,79 @@ export interface ClinicalRecord {
   surgery_details: string | null
   surgery_date: string | null
   current_ocular_symptoms: boolean
+  current_symptoms: boolean
   symptoms_details: string | null
-  
+
   // Agudeza visual
   visual_acuity: VisualAcuity
-  
-  // Examen externo
-  external_exam: ExternalExam
-  
-  // Cover test
-  cover_test: CoverTest
-  
-  // Oftalmoscopía
-  oftalmoscopia: Oftalmoscopia
-  
+  ph_od: string | null
+  ph_oi: string | null
+
+  // Examen externo detallado
+  ext_parpados_od: string | null
+  ext_parpados_oi: string | null
+  ext_conjuntiva_od: string | null
+  ext_conjuntiva_oi: string | null
+  ext_cornea_od: string | null
+  ext_cornea_oi: string | null
+  ext_iris_od: string | null
+  ext_iris_oi: string | null
+  ext_pupila_od: string | null
+  ext_pupila_oi: string | null
+  ext_cristalino_od: string | null
+  ext_cristalino_oi: string | null
+  ext_motilidad: string | null
+  ext_cover_test: string | null
+  ext_ppc: string | null
+  ext_observations: string | null
+
+  // Refracción
+  refraction_od_esfera: string | null
+  refraction_od_cilindro: string | null
+  refraction_od_eje: string | null
+  refraction_od_add: string | null
+  refraction_od_av: string | null
+  refraction_oi_esfera: string | null
+  refraction_oi_cilindro: string | null
+  refraction_oi_eje: string | null
+  refraction_oi_add: string | null
+  refraction_oi_av: string | null
+  refraction_dp: string | null
+  refraction_lens_type: string | null
+
+  // Queratometría
+  keratometry_od_k1: string | null
+  keratometry_od_k2: string | null
+  keratometry_od_eje: string | null
+  keratometry_oi_k1: string | null
+  keratometry_oi_k2: string | null
+  keratometry_oi_eje: string | null
+
+  // Test complementarios
+  test_ishihara: string | null
+  test_estereopsis: string | null
+  test_others: string | null
+
   // Visión cromática
   chromatic_vision: 'normal' | 'anormal'
   estereopsis: string | null
-  
-  // Queratometría
-  queratometria: Queratometria
-  
-  // Retinoscopía
-  retinoscopia: Retinoscopia
-  
-  // Diagnóstico y observaciones
-  diagnosis: string
+
+  // Diagnóstico
+  diagnosis: string | null
   observations: string | null
-  
-  // Remisión
+  conduct: string | null
+  occupational_concept: string | null
   eps_referral: boolean
-  
+
+  // Profesional y firmas
+  professional_name: string | null
+  professional_registration: string | null
+  signature_professional: string | null
+  signature_patient: string | null
+
   created_at: string
   updated_at: string
-  
+
   // Relations
   patient?: Patient
   optometrist?: Profile
