@@ -279,6 +279,14 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               <Text style={styles.tableCell}>{va?.oi_con_correccion_cercana || "-"}</Text>
               <Text style={styles.tableCell}>{record.ph_oi || "-"}</Text>
             </View>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableCellLabel}>AO (Ambos)</Text>
+              <Text style={styles.tableCell}>{record.ao_far_without_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.ao_far_with_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.ao_near_without_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.ao_near_with_correction || "-"}</Text>
+              <Text style={styles.tableCell}>-</Text>
+            </View>
           </View>
         </View>
 
@@ -314,10 +322,6 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
             <View style={styles.col3}>
               <Text style={styles.label}>Cover Test</Text>
               <Text style={styles.value}>{record.ext_cover_test || "Normal"}</Text>
-            </View>
-            <View style={styles.col3}>
-              <Text style={styles.label}>PPC (cm)</Text>
-              <Text style={styles.value}>{record.ext_ppc || "-"}</Text>
             </View>
           </View>
           {record.ext_observations && (

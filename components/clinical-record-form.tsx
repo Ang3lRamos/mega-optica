@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
 import { AlertCircle, Save, ArrowLeft, ChevronRight, ChevronLeft, Upload } from "lucide-react"
@@ -57,10 +56,7 @@ const OCCUPATIONAL_EXPOSURES = [
 ]
 
 const OCCUPATIONAL_CONCEPTS = [
-  "Apto",
-  "Apto con restricciones",
-  "No apto",
-  "Aplazado",
+  "Apto", "Apto con restricciones", "No apto", "Aplazado",
 ]
 
 const TABS = [
@@ -117,11 +113,14 @@ export function ClinicalRecordForm({
       od_con_correccion_cercana: "",
       oi_sin_correccion_cercana: "",
       oi_con_correccion_cercana: "",
+      ao_sin_correccion_lejana: "",
+      ao_con_correccion_lejana: "",
+      ao_sin_correccion_cercana: "",
+      ao_con_correccion_cercana: "",
     },
     ph_od: record?.ph_od || "",
     ph_oi: record?.ph_oi || "",
 
-    // Examen externo detallado
     ext_parpados_od: record?.ext_parpados_od || "Normal",
     ext_parpados_oi: record?.ext_parpados_oi || "Normal",
     ext_conjuntiva_od: record?.ext_conjuntiva_od || "Normal",
@@ -136,10 +135,8 @@ export function ClinicalRecordForm({
     ext_cristalino_oi: record?.ext_cristalino_oi || "Normal",
     ext_motilidad: record?.ext_motilidad || "Normal",
     ext_cover_test: record?.ext_cover_test || "Normal",
-    ext_ppc: record?.ext_ppc || "",
     ext_observations: record?.ext_observations || "",
 
-    // Refracción
     refraction_od_esfera: record?.refraction_od_esfera || "",
     refraction_od_cilindro: record?.refraction_od_cilindro || "",
     refraction_od_eje: record?.refraction_od_eje || "",
@@ -153,7 +150,6 @@ export function ClinicalRecordForm({
     refraction_dp: record?.refraction_dp || "",
     refraction_lens_type: record?.refraction_lens_type || "",
 
-    // Queratometría
     keratometry_od_k1: record?.keratometry_od_k1 || "",
     keratometry_od_k2: record?.keratometry_od_k2 || "",
     keratometry_od_eje: record?.keratometry_od_eje || "",
@@ -161,21 +157,20 @@ export function ClinicalRecordForm({
     keratometry_oi_k2: record?.keratometry_oi_k2 || "",
     keratometry_oi_eje: record?.keratometry_oi_eje || "",
 
-    // Test complementarios
     test_ishihara: record?.test_ishihara || "",
     test_estereopsis: record?.test_estereopsis || "",
     test_others: record?.test_others || "",
 
-    // Diagnóstico
-      diagnosis: record?.diagnosis || "",
-      observations: record?.observations || "",
-      conduct: record?.conduct || "",
-      occupational_concept: record?.occupational_concept || "",
-      professional_name: record?.professional_name || "",
-      professional_registration: record?.professional_registration || "",
-      signature_professional: record?.signature_professional || "",
-      signature_patient: record?.signature_patient || "",
-      eps_referral: record?.eps_referral || false,
+    diagnosis: record?.diagnosis || "",
+    observations: record?.observations || "",
+    conduct: record?.conduct || "",
+    occupational_concept: record?.occupational_concept || "",
+    eps_referral: record?.eps_referral || false,
+
+    professional_name: record?.professional_name || "",
+    professional_registration: record?.professional_registration || "",
+    signature_professional: record?.signature_professional || "",
+    signature_patient: record?.signature_patient || "",
   })
 
   const toggleArrayField = (field: string, value: string) => {
@@ -249,7 +244,6 @@ export function ClinicalRecordForm({
         ext_cristalino_oi: formData.ext_cristalino_oi,
         ext_motilidad: formData.ext_motilidad,
         ext_cover_test: formData.ext_cover_test,
-        ext_ppc: formData.ext_ppc || null,
         ext_observations: formData.ext_observations || null,
 
         refraction_od_esfera: formData.refraction_od_esfera || null,
@@ -280,11 +274,17 @@ export function ClinicalRecordForm({
         observations: formData.observations || null,
         conduct: formData.conduct || null,
         occupational_concept: formData.occupational_concept || null,
+        eps_referral: formData.eps_referral,
+
         professional_name: formData.professional_name || null,
         professional_registration: formData.professional_registration || null,
         signature_professional: formData.signature_professional || null,
         signature_patient: formData.signature_patient || null,
-        eps_referral: formData.eps_referral,
+
+        ao_far_without_correction: formData.visual_acuity.ao_sin_correccion_lejana || null,
+        ao_far_with_correction: formData.visual_acuity.ao_con_correccion_lejana || null,
+        ao_near_without_correction: formData.visual_acuity.ao_sin_correccion_cercana || null,
+        ao_near_with_correction: formData.visual_acuity.ao_con_correccion_cercana || null,
       }
 
       if (isEdit && record) {
@@ -326,9 +326,7 @@ export function ClinicalRecordForm({
       value={formData[field as keyof typeof formData] as string}
       onValueChange={(v) => updateField(field, v)}
     >
-      <SelectTrigger className="h-8">
-        <SelectValue />
-      </SelectTrigger>
+      <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
       <SelectContent>
         {EXT_OPTIONS.map((opt) => (
           <SelectItem key={opt} value={opt}>{opt}</SelectItem>
@@ -387,17 +385,11 @@ export function ClinicalRecordForm({
               <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
                   <Label>Paciente</Label>
-                  <Select
-                    value={formData.patient_id}
-                    onValueChange={(v) => updateField("patient_id", v)}
-                    disabled={!!selectedPatient}
-                  >
+                  <Select value={formData.patient_id} onValueChange={(v) => updateField("patient_id", v)} disabled={!!selectedPatient}>
                     <SelectTrigger><SelectValue placeholder="Seleccionar paciente" /></SelectTrigger>
                     <SelectContent>
                       {patients.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.full_name} - {p.identification_number}
-                        </SelectItem>
+                        <SelectItem key={p.id} value={p.id}>{p.full_name} - {p.identification_number}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -407,7 +399,7 @@ export function ClinicalRecordForm({
                   <Input type="date" value={formData.exam_date} onChange={(e) => updateField("exam_date", e.target.value)} required disabled={loading} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Visiometria</Label>
+                  <Label>Tipo de Visiometría</Label>
                   <Select value={formData.exam_type} onValueChange={(v) => updateField("exam_type", v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -421,15 +413,23 @@ export function ClinicalRecordForm({
             </Card>
 
             <Card>
+              <CardHeader><CardTitle>Datos del Profesional</CardTitle></CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Nombre del Profesional</Label>
+                  <Input value={formData.professional_name} onChange={(e) => updateField("professional_name", e.target.value)} placeholder="Nombre completo" disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Registro Profesional / T.P.</Label>
+                  <Input value={formData.professional_registration} onChange={(e) => updateField("professional_registration", e.target.value)} placeholder="TP 12345" disabled={loading} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
               <CardHeader><CardTitle>Motivo de Consulta</CardTitle></CardHeader>
               <CardContent>
-                <Textarea
-                  value={formData.consultation_reason}
-                  onChange={(e) => updateField("consultation_reason", e.target.value)}
-                  placeholder="Describa el motivo de la consulta..."
-                  rows={4}
-                  disabled={loading}
-                />
+                <Textarea value={formData.consultation_reason} onChange={(e) => updateField("consultation_reason", e.target.value)} placeholder="Describa el motivo de la consulta..." rows={4} disabled={loading} />
               </CardContent>
             </Card>
           </div>
@@ -444,11 +444,7 @@ export function ClinicalRecordForm({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {PERSONAL_HISTORY_OPTIONS.map((option) => (
                     <div key={option} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`personal-${option}`}
-                        checked={formData.personal_history.includes(option)}
-                        onCheckedChange={() => toggleArrayField("personal_history", option)}
-                      />
+                      <Checkbox id={`personal-${option}`} checked={formData.personal_history.includes(option)} onCheckedChange={() => toggleArrayField("personal_history", option)} />
                       <Label htmlFor={`personal-${option}`} className="cursor-pointer">{option}</Label>
                     </div>
                   ))}
@@ -466,11 +462,7 @@ export function ClinicalRecordForm({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {FAMILY_HISTORY_OPTIONS.map((option) => (
                     <div key={option} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`family-${option}`}
-                        checked={formData.family_history.includes(option)}
-                        onCheckedChange={() => toggleArrayField("family_history", option)}
-                      />
+                      <Checkbox id={`family-${option}`} checked={formData.family_history.includes(option)} onCheckedChange={() => toggleArrayField("family_history", option)} />
                       <Label htmlFor={`family-${option}`} className="cursor-pointer">{option}</Label>
                     </div>
                   ))}
@@ -499,23 +491,17 @@ export function ClinicalRecordForm({
                     <Input placeholder="2 años, 6 meses..." disabled={loading} />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label className="font-medium">Exposiciones</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {OCCUPATIONAL_EXPOSURES.map((option) => (
                       <div key={option} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`exposure-${option}`}
-                          checked={formData.occupational_exposures.includes(option)}
-                          onCheckedChange={() => toggleArrayField("occupational_exposures", option)}
-                        />
+                        <Checkbox id={`exposure-${option}`} checked={formData.occupational_exposures.includes(option)} onCheckedChange={() => toggleArrayField("occupational_exposures", option)} />
                         <Label htmlFor={`exposure-${option}`} className="cursor-pointer">{option}</Label>
                       </div>
                     ))}
                   </div>
                 </div>
-
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <Switch id="previous_exam" checked={formData.previous_exam} onCheckedChange={(v) => updateField("previous_exam", v)} />
@@ -527,7 +513,6 @@ export function ClinicalRecordForm({
                       <Input type="date" value={formData.previous_exam_date} onChange={(e) => updateField("previous_exam_date", e.target.value)} disabled={loading} />
                     </div>
                   )}
-
                   <div className="flex items-center space-x-2">
                     <Switch id="has_prescribed_lenses" checked={formData.has_prescribed_lenses} onCheckedChange={(v) => updateField("has_prescribed_lenses", v)} />
                     <Label htmlFor="has_prescribed_lenses">¿Tiene lentes formulados?</Label>
@@ -547,7 +532,6 @@ export function ClinicalRecordForm({
                       </Select>
                     </div>
                   )}
-
                   <div className="flex items-center space-x-2">
                     <Switch id="ocular_surgery" checked={formData.ocular_surgery} onCheckedChange={(v) => updateField("ocular_surgery", v)} />
                     <Label htmlFor="ocular_surgery">¿Cirugía ocular?</Label>
@@ -558,7 +542,6 @@ export function ClinicalRecordForm({
                       <Input type="date" value={formData.surgery_date} onChange={(e) => updateField("surgery_date", e.target.value)} disabled={loading} />
                     </div>
                   )}
-
                   <div className="flex items-center space-x-2">
                     <Switch id="current_ocular_symptoms" checked={formData.current_ocular_symptoms} onCheckedChange={(v) => updateField("current_ocular_symptoms", v)} />
                     <Label htmlFor="current_ocular_symptoms">¿Sintomatología ocular actual?</Label>
@@ -583,7 +566,7 @@ export function ClinicalRecordForm({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="p-2 text-left"></th>
+                      <th className="p-2 text-left w-16"></th>
                       <th className="p-2 text-center" colSpan={2}>Visión Lejana</th>
                       <th className="p-2 text-center" colSpan={2}>Visión Cercana</th>
                       <th className="p-2 text-center">PH</th>
@@ -606,13 +589,21 @@ export function ClinicalRecordForm({
                       <td className="p-2"><VASelect subfield="od_con_correccion_cercana" /></td>
                       <td className="p-2"><Input className="h-8" value={formData.ph_od} onChange={(e) => updateField("ph_od", e.target.value)} placeholder="-" disabled={loading} /></td>
                     </tr>
-                    <tr>
+                    <tr className="border-b">
                       <td className="p-2 font-medium">OI</td>
                       <td className="p-2"><VASelect subfield="oi_sin_correccion_lejana" /></td>
                       <td className="p-2"><VASelect subfield="oi_con_correccion_lejana" /></td>
                       <td className="p-2"><VASelect subfield="oi_sin_correccion_cercana" /></td>
                       <td className="p-2"><VASelect subfield="oi_con_correccion_cercana" /></td>
                       <td className="p-2"><Input className="h-8" value={formData.ph_oi} onChange={(e) => updateField("ph_oi", e.target.value)} placeholder="-" disabled={loading} /></td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-medium text-muted-foreground">AO</td>
+                      <td className="p-2"><VASelect subfield="ao_sin_correccion_lejana" /></td>
+                      <td className="p-2"><VASelect subfield="ao_con_correccion_lejana" /></td>
+                      <td className="p-2"><VASelect subfield="ao_sin_correccion_cercana" /></td>
+                      <td className="p-2"><VASelect subfield="ao_con_correccion_cercana" /></td>
+                      <td className="p-2"></td>
                     </tr>
                   </tbody>
                 </table>
@@ -621,10 +612,9 @@ export function ClinicalRecordForm({
           </Card>
         )}
 
-        {/* TAB 4: Exámenes Complementarios */}
+        {/* TAB 4: Examen Clínico */}
         {activeTab === 3 && (
           <div className="space-y-4">
-            {/* Examen Externo */}
             <Card>
               <CardHeader><CardTitle>Examen Externo</CardTitle></CardHeader>
               <CardContent>
@@ -655,8 +645,7 @@ export function ClinicalRecordForm({
                     </tbody>
                   </table>
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-3 mt-4">
+                <div className="grid gap-4 sm:grid-cols-2 mt-4">
                   <div className="space-y-1">
                     <Label>Motilidad</Label>
                     <ExtSelect field="ext_motilidad" />
@@ -665,12 +654,7 @@ export function ClinicalRecordForm({
                     <Label>Cover Test</Label>
                     <ExtSelect field="ext_cover_test" />
                   </div>
-                  <div className="space-y-1">
-                    <Label>PPC (cm)</Label>
-                    <Input value={formData.ext_ppc} onChange={(e) => updateField("ext_ppc", e.target.value)} placeholder="8 cm" disabled={loading} />
-                  </div>
                 </div>
-
                 <div className="space-y-2 mt-4">
                   <Label>Observaciones examen externo</Label>
                   <Textarea value={formData.ext_observations} onChange={(e) => updateField("ext_observations", e.target.value)} rows={2} disabled={loading} />
@@ -678,7 +662,6 @@ export function ClinicalRecordForm({
               </CardContent>
             </Card>
 
-            {/* Refracción */}
             <Card>
               <CardHeader><CardTitle>Refracción</CardTitle></CardHeader>
               <CardContent>
@@ -727,7 +710,6 @@ export function ClinicalRecordForm({
               </CardContent>
             </Card>
 
-            {/* Queratometría */}
             <Card>
               <CardHeader><CardTitle>Queratometría</CardTitle></CardHeader>
               <CardContent>
@@ -760,7 +742,6 @@ export function ClinicalRecordForm({
               </CardContent>
             </Card>
 
-            {/* Test Complementarios */}
             <Card>
               <CardHeader><CardTitle>Test Complementarios</CardTitle></CardHeader>
               <CardContent className="space-y-4">
@@ -801,112 +782,70 @@ export function ClinicalRecordForm({
                   <Label>Conducta / Recomendaciones</Label>
                   <Textarea value={formData.conduct} onChange={(e) => updateField("conduct", e.target.value)} placeholder="Uso de lentes correctivos, control anual..." rows={3} disabled={loading} />
                 </div>
+                <div className="space-y-2">
+                  <Label>Concepto Ocupacional</Label>
+                  <Select value={formData.occupational_concept} onValueChange={(v) => updateField("occupational_concept", v)}>
+                    <SelectTrigger><SelectValue placeholder="Seleccione el concepto" /></SelectTrigger>
+                    <SelectContent>
+                      {OCCUPATIONAL_CONCEPTS.map((concept) => (
+                        <SelectItem key={concept} value={concept}>{concept}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-center space-x-2">
                   <Switch id="eps_referral" checked={formData.eps_referral} onCheckedChange={(v) => updateField("eps_referral", v)} />
                   <Label htmlFor="eps_referral">Remisión a EPS</Label>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
-          {/* Concepto Ocupacional */}
-          <div className="space-y-2">
-            <Label>Concepto Ocupacional</Label>
-            <Select
-              value={formData.occupational_concept}
-              onValueChange={(v) => updateField("occupational_concept", v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione el concepto" />
-              </SelectTrigger>
-              <SelectContent>
-                {OCCUPATIONAL_CONCEPTS.map((concept) => (
-                  <SelectItem key={concept} value={concept}>{concept}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          {/* Datos del Profesional */}
-          <Card>
-            <CardHeader><CardTitle>Datos del Profesional</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nombre del Profesional</Label>
-                <Input
-                  value={formData.professional_name}
-                  onChange={(e) => updateField("professional_name", e.target.value)}
-                  placeholder="Hana"
-                  disabled={loading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Registro Profesional / T.P.</Label>
-                <Input
-                  value={formData.professional_registration}
-                  onChange={(e) => updateField("professional_registration", e.target.value)}
-                  placeholder="TP 12345"
-                  disabled={loading}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Firmas */}
-          <Card>
-            <CardHeader><CardTitle>Firmas</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Firma del Profesional</Label>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
-                    <Upload className="size-4" />
-                    Subir imagen de firma
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
+            <Card>
+              <CardHeader><CardTitle>Firmas</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Firma del Profesional</Label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
+                      <Upload className="size-4" />
+                      Subir imagen de firma
+                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                         const file = e.target.files?.[0]
                         if (!file) return
                         const reader = new FileReader()
                         reader.onloadend = () => updateField("signature_professional", reader.result as string)
                         reader.readAsDataURL(file)
-                      }}
-                    />
-                  </label>
-                  {formData.signature_professional && (
-                    <img src={formData.signature_professional} alt="Firma profesional" className="h-12 object-contain border rounded" />
-                  )}
+                      }} />
+                    </label>
+                    {formData.signature_professional && (
+                      <img src={formData.signature_professional} alt="Firma profesional" className="h-12 object-contain border rounded" />
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Firma del Paciente</Label>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
-                    <Upload className="size-4" />
-                    Subir imagen de firma
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
+                <div className="space-y-2">
+                  <Label>Firma del Paciente</Label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
+                      <Upload className="size-4" />
+                      Subir imagen de firma
+                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                         const file = e.target.files?.[0]
                         if (!file) return
                         const reader = new FileReader()
                         reader.onloadend = () => updateField("signature_patient", reader.result as string)
                         reader.readAsDataURL(file)
-                      }}
-                    />
-                  </label>
-                  {formData.signature_patient && (
-                    <img src={formData.signature_patient} alt="Firma paciente" className="h-12 object-contain border rounded" />
-                  )}
+                      }} />
+                    </label>
+                    {formData.signature_patient && (
+                      <img src={formData.signature_patient} alt="Firma paciente" className="h-12 object-contain border rounded" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Navegación */}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
           <Button type="button" variant="outline" asChild disabled={loading}>

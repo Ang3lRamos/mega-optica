@@ -66,7 +66,7 @@ export default function LoginPage() {
                 alt="Mega Óptica"
                 width={180}
                 height={100}
-                className="object-contain h-auto w-auto"
+                className="object-contain h-auto w-auto rounded-xl shadow-md"
                 priority
               />
             </div>

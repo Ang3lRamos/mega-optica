@@ -81,6 +81,10 @@ export interface ClinicalRecord {
   visual_acuity: VisualAcuity
   ph_od: string | null
   ph_oi: string | null
+  ao_far_without_correction: string | null
+  ao_far_with_correction: string | null
+  ao_near_without_correction: string | null
+  ao_near_with_correction: string | null
 
   // Examen externo detallado
   ext_parpados_od: string | null
