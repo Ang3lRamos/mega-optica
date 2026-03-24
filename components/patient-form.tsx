@@ -19,6 +19,12 @@ import { Spinner } from "@/components/ui/spinner"
 import { AlertCircle, Save, ArrowLeft } from "lucide-react"
 import { Patient } from "@/lib/types"
 import Link from "next/link"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface PatientFormProps {
   patient?: Patient
@@ -43,6 +49,8 @@ export function PatientForm({ patient, isEdit = false }: PatientFormProps) {
     company: patient?.company || "",
     occupation: patient?.occupation || "",
   })
+  const [showGenderDialog, setShowGenderDialog] = useState(false) 
+  const [customGender, setCustomGender] = useState("")
 
   const calculateAge = (birthDate: string): number => {
     const today = new Date()
@@ -193,19 +201,88 @@ export function PatientForm({ patient, isEdit = false }: PatientFormProps) {
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="gender">Género</Label>
               <Select
-                value={formData.gender}
-                onValueChange={(value) => updateField("gender", value)}
+                value={["M", "F"].includes(formData.gender) ? formData.gender : "O"}
+                onValueChange={(value) => {
+                  if (value === "O") {
+                    setShowGenderDialog(true)
+                  } else {
+                    updateField("gender", value)
+                  }
+                }}
               >
                 <SelectTrigger id="gender">
-                  <SelectValue />
+                  <SelectValue>
+                    {formData.gender === "M" && "Masculino"}
+                    {formData.gender === "F" && "Femenino"}
+                    {formData.gender === "NB" && "No binario"}
+                    {formData.gender === "GF" && "Género fluido"}
+                    {formData.gender === "ND" && "Prefiero no decirlo"}
+                    {!["M", "F", "NB", "GF", "ND"].includes(formData.gender) && formData.gender && formData.gender}
+                    {!formData.gender && "Seleccionar"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="M">Masculino</SelectItem>
                   <SelectItem value="F">Femenino</SelectItem>
+                  <SelectItem value="O">Otro...</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Dialog open={showGenderDialog} onOpenChange={setShowGenderDialog}>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Selecciona una opción</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-2">
+                    {[
+                      { value: "NB", label: "No binario" },
+                      { value: "GF", label: "Género fluido" },
+                      { value: "ND", label: "Prefiero no decirlo" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          updateField("gender", option.value)
+                          setShowGenderDialog(false)
+                        }}
+                        className={`w-full text-left px-4 py-2 rounded-md border transition-colors hover:bg-accent ${
+                          formData.gender === option.value ? "bg-accent border-primary" : ""
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                    <div className="space-y-2 pt-2 border-t">
+                      <Label>Otro (especificar)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={customGender}
+                          onChange={(e) => setCustomGender(e.target.value)}
+                          placeholder="Escribe aquí..."
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            if (customGender.trim()) {
+                              updateField("gender", customGender.trim())
+                              setShowGenderDialog(false)
+                              setCustomGender("")
+                            }
+                          }}
+                        >
+                          OK
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             </div>
 
             <div className="space-y-2">

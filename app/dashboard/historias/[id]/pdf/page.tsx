@@ -87,7 +87,7 @@ export default function PDFPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href={`/dashboard/historias/${id}`}>
+            <Link href={`/dashboard/historias/`}>
               <ArrowLeft className="size-4" />
             </Link>
           </Button>

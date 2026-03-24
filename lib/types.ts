@@ -14,7 +14,7 @@ export interface Patient {
   identification_type: string
   identification_number: string
   full_name: string
-  gender: 'M' | 'F'
+  gender: 'M' | 'F' | 'O' | 'NB' | 'GF' | 'ND' | string
   birth_date: string
   age: number
   phone: string
