@@ -155,7 +155,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
           <View>
             <Text style={styles.logo}>Mega Óptica</Text>
             <Text style={styles.logoSubtitle}>Salud Visual</Text>
-            <Text style={styles.nit}>NIT: 92521731-6</Text>
+            <Text style={styles.nit}>NIT: </Text>
           </View>
           <View style={{ textAlign: "right" }}>
             <Text style={{ fontSize: 9 }}>Fecha: {examDate.toLocaleDateString("es-CO")}</Text>
@@ -505,7 +505,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
 
         {/* Footer */}
         <Text style={styles.footer}>
-          Mega Óptica - Salud Visual | NIT: 92521731-6
+          Mega Óptica - Salud Visual | NIT: 
         </Text>
       </Page>
     </Document>
