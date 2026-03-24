@@ -2,7 +2,6 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -12,8 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Eye, FileText } from "lucide-react"
+import { Plus, Eye, FileText, Pencil } from "lucide-react"
 import { PatientsSearch } from "@/components/patients-search"
+import { ROLE_PERMISSIONS } from "@/lib/types"
 
 export default async function PacientesPage({
   searchParams,
@@ -23,6 +23,15 @@ export default async function PacientesPage({
   const params = await searchParams
   const supabase = await createClient()
   const searchQuery = params.q || ""
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single()
+
+  const permissions = ROLE_PERMISSIONS[profile?.role ?? "recepcionista"]
 
   let query = supabase
     .from("patients")
@@ -117,12 +126,22 @@ export default async function PacientesPage({
                               <span className="sr-only">Ver</span>
                             </Link>
                           </Button>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/dashboard/historias/nueva?paciente=${patient.id}`}>
-                              <FileText className="size-4" />
-                              <span className="sr-only">Nueva Historia</span>
-                            </Link>
-                          </Button>
+                          {permissions.canEditPatients && (
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/pacientes/${patient.id}/editar`}>
+                                <Pencil className="size-4" />
+                                <span className="sr-only">Editar</span>
+                              </Link>
+                            </Button>
+                          )}
+                          {permissions.canCreateRecords && (
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/historias/nueva?paciente=${patient.id}`}>
+                                <FileText className="size-4" />
+                                <span className="sr-only">Nueva Historia</span>
+                              </Link>
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -60,9 +60,13 @@ export function PatientForm({ patient, isEdit = false }: PatientFormProps) {
     setError(null)
     setLoading(true)
 
+    console.log("isEdit:", isEdit)
+    console.log("patient:", patient)
+    console.log("patient.id:", patient?.id)
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) {
         setError("No hay sesión activa")
         return
@@ -71,7 +75,7 @@ export function PatientForm({ patient, isEdit = false }: PatientFormProps) {
       const age = calculateAge(formData.birth_date)
 
       if (isEdit && patient) {
-        const { error: updateError } = await supabase
+        const { data: updatedRows, error: updateError } = await supabase
           .from("patients")
           .update({
             ...formData,
@@ -79,8 +83,17 @@ export function PatientForm({ patient, isEdit = false }: PatientFormProps) {
             updated_at: new Date().toISOString(),
           })
           .eq("id", patient.id)
+          .select()
+
+        console.log("updatedRows:", updatedRows)
+        console.log("updateError:", updateError)
 
         if (updateError) throw updateError
+
+        if (!updatedRows || updatedRows.length === 0) {
+          setError("No se encontró el paciente para actualizar. Verifica que el registro exista.")
+          return
+        }
       } else {
         const payload = {
           ...formData,

@@ -183,7 +183,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
 }> = {
   recepcionista: {
     canCreatePatients: true,
-    canEditPatients: false,
+    canEditPatients: true,
     canDeletePatients: false,
     canCreateRecords: false,
     canEditRecords: false,

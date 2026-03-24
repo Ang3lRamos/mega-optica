@@ -5,15 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { ArrowLeft, Edit, FileText, Plus, Eye } from "lucide-react"
-import { EXAM_TYPE_LABELS } from "@/lib/types"
+import { EXAM_TYPE_LABELS, ROLE_PERMISSIONS } from "@/lib/types"
 
 export default async function PacienteDetailPage({
   params,
@@ -23,15 +18,22 @@ export default async function PacienteDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single()
+
+  const permissions = ROLE_PERMISSIONS[profile?.role ?? "recepcionista"]
+
   const { data: patient } = await supabase
     .from("patients")
     .select("*")
     .eq("id", id)
     .single()
 
-  if (!patient) {
-    notFound()
-  }
+  if (!patient) notFound()
 
   const { data: records } = await supabase
     .from("clinical_records")
@@ -72,27 +74,25 @@ export default async function PacienteDetailPage({
               Editar
             </Link>
           </Button>
-          <Button asChild>
-            <Link href={`/dashboard/historias/nueva?paciente=${id}`}>
-              <Plus className="mr-2 size-4" />
-              Nueva Historia
-            </Link>
-          </Button>
+          {permissions.canCreateRecords && (
+            <Button asChild>
+              <Link href={`/dashboard/historias/nueva?paciente=${id}`}>
+                <Plus className="mr-2 size-4" />
+                Nueva Historia
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Datos Personales</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Datos Personales</CardTitle></CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Género</p>
-                <p className="font-medium">
-                  {patient.gender === "M" ? "Masculino" : "Femenino"}
-                </p>
+                <p className="font-medium">{patient.gender === "M" ? "Masculino" : "Femenino"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Edad</p>
@@ -102,9 +102,7 @@ export default async function PacienteDetailPage({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Fecha de Nacimiento</p>
-                <p className="font-medium">
-                  {new Date(patient.birth_date).toLocaleDateString("es-CO")}
-                </p>
+                <p className="font-medium">{new Date(patient.birth_date).toLocaleDateString("es-CO")}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Teléfono</p>
@@ -123,9 +121,7 @@ export default async function PacienteDetailPage({
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Datos Laborales</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Datos Laborales</CardTitle></CardHeader>
           <CardContent className="grid gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Empresa</p>
@@ -137,9 +133,7 @@ export default async function PacienteDetailPage({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Fecha de Registro</p>
-              <p className="font-medium">
-                {new Date(patient.created_at).toLocaleDateString("es-CO")}
-              </p>
+              <p className="font-medium">{new Date(patient.created_at).toLocaleDateString("es-CO")}</p>
             </div>
           </CardContent>
         </Card>
@@ -148,9 +142,7 @@ export default async function PacienteDetailPage({
       <Card>
         <CardHeader>
           <CardTitle>Historias Clínicas</CardTitle>
-          <CardDescription>
-            {records?.length || 0} registros encontrados
-          </CardDescription>
+          <CardDescription>{records?.length || 0} registros encontrados</CardDescription>
         </CardHeader>
         <CardContent>
           {records && records.length > 0 ? (
@@ -186,12 +178,14 @@ export default async function PacienteDetailPage({
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" asChild>
-                              <Link href={`/dashboard/historias/${record.id}`}>
-                                <Eye className="size-4" />
-                                <span className="sr-only">Ver</span>
-                              </Link>
-                            </Button>
+                            {permissions.canCreateRecords && (
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/dashboard/historias/${record.id}`}>
+                                  <Eye className="size-4" />
+                                  <span className="sr-only">Ver</span>
+                                </Link>
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

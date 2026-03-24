@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PatientForm } from "@/components/patient-form"
 import { Patient } from "@/lib/types"
@@ -10,18 +10,6 @@ export default async function EditarPacientePage({
 }) {
   const { id } = await params
   const supabase = await createClient()
-
-  // Verificar rol del usuario
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user!.id)
-    .single()
-
-  if (profile?.role === "recepcionista") {
-    redirect("/dashboard/pacientes")
-  }
 
   const { data: patient } = await supabase
     .from("patients")
