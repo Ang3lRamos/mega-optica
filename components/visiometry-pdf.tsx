@@ -155,7 +155,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
           <View>
             <Text style={styles.logo}>Mega Óptica</Text>
             <Text style={styles.logoSubtitle}>Salud Visual</Text>
-            <Text style={styles.nit}>NIT: </Text>
+            <Text style={styles.nit}>NIT: 92521731-6</Text>
           </View>
           <View style={{ textAlign: "right" }}>
             <Text style={{ fontSize: 9 }}>Fecha: {examDate.toLocaleDateString("es-CO")}</Text>
@@ -455,11 +455,15 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
 
         <View style={styles.row}>
           <Text style={styles.label}>Remisión a EPS: </Text>
-          <Text style={styles.value}>{record.eps_referral ? "Sí" : "No"}</Text>
+          <Text style={styles.value}>
+            {record.eps_referral
+              ? `Sí${record.eps_referral_details ? ` - ${record.eps_referral_details}` : ""}`
+              : "No"}
+          </Text>
         </View>
 
         {/* Consentimiento */}
-        <View style={styles.consentSection}>
+        {/* <View style={styles.consentSection}>
           <Text style={{ fontWeight: "bold", marginBottom: 4 }}>CONSENTIMIENTO INFORMADO</Text>
           <Text>
             Yo, {patient.full_name}, identificado con {patient.identification_type} No. {patient.identification_number},
@@ -471,7 +475,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
             Certifico que la información que he suministrado es verdadera, completa y acepto el manejo de confidencialidad
             que el profesional de a la misma.
           </Text>
-        </View>
+        </View> */}
 
         {/* Firmas */}
         <View style={styles.signatureSection}>
@@ -489,23 +493,19 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               </Text>
             </View>
           </View>
-          <View style={styles.signatureBox}>
-            {record.signature_patient ? (
-              <Image src={record.signature_patient} style={styles.signatureImage} />
-            ) : (
-              <View style={{ height: 50 }} />
-            )}
+          {/* <View style={styles.signatureBox}>
+            <View style={{ height: 50 }} />
             <View style={styles.signatureLine}>
               <Text style={{ fontWeight: "bold" }}>ASPIRANTE O TRABAJADOR</Text>
               <Text>{patient.full_name}</Text>
               <Text style={{ fontSize: 7 }}>{patient.identification_type}: {patient.identification_number}</Text>
             </View>
-          </View>
+          </View> */}
         </View>
 
         {/* Footer */}
         <Text style={styles.footer}>
-          Mega Óptica - Salud Visual | NIT: 
+          Mega Óptica - Salud Visual | NIT: 92521731-6
         </Text>
       </Page>
     </Document>

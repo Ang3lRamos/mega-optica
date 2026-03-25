@@ -141,6 +141,7 @@ export interface ClinicalRecord {
   conduct: string | null
   occupational_concept: string | null
   eps_referral: boolean
+  eps_referral_details: string | null
 
   // Profesional y firmas
   professional_name: string | null

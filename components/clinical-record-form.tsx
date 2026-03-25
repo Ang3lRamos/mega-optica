@@ -55,10 +55,6 @@ const OCCUPATIONAL_EXPOSURES = [
   "Pantalla / VDT", "Químicos", "Soldadura", "Polvo / partículas", "Usa EPP visual"
 ]
 
-const OCCUPATIONAL_CONCEPTS = [
-  "Apto", "Apto con restricciones", "No apto", "Aplazado",
-]
-
 const TABS = [
   { id: 0, label: "Datos del Examen" },
   { id: 1, label: "Antecedentes" },
@@ -78,6 +74,9 @@ export function ClinicalRecordForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState(0)
+  const [showCoverTestDetails, setShowCoverTestDetails] = useState(
+    !["Ortoforia", ""].includes(record?.ext_cover_test || "")
+  )
 
   const [formData, setFormData] = useState({
     patient_id: selectedPatient?.id || record?.patient_id || "",
@@ -134,7 +133,7 @@ export function ClinicalRecordForm({
     ext_cristalino_od: record?.ext_cristalino_od || "Normal",
     ext_cristalino_oi: record?.ext_cristalino_oi || "Normal",
     ext_motilidad: record?.ext_motilidad || "Normal",
-    ext_cover_test: record?.ext_cover_test || "Normal",
+    ext_cover_test: record?.ext_cover_test || "",
     ext_observations: record?.ext_observations || "",
 
     refraction_od_esfera: record?.refraction_od_esfera || "",
@@ -164,13 +163,12 @@ export function ClinicalRecordForm({
     diagnosis: record?.diagnosis || "",
     observations: record?.observations || "",
     conduct: record?.conduct || "",
-    occupational_concept: record?.occupational_concept || "",
     eps_referral: record?.eps_referral || false,
+    eps_referral_details: record?.eps_referral_details || "",
 
     professional_name: record?.professional_name || "",
     professional_registration: record?.professional_registration || "",
     signature_professional: record?.signature_professional || "",
-    signature_patient: record?.signature_patient || "",
   })
 
   const toggleArrayField = (field: string, value: string) => {
@@ -243,7 +241,7 @@ export function ClinicalRecordForm({
         ext_cristalino_od: formData.ext_cristalino_od,
         ext_cristalino_oi: formData.ext_cristalino_oi,
         ext_motilidad: formData.ext_motilidad,
-        ext_cover_test: formData.ext_cover_test,
+        ext_cover_test: formData.ext_cover_test || null,
         ext_observations: formData.ext_observations || null,
 
         refraction_od_esfera: formData.refraction_od_esfera || null,
@@ -273,13 +271,12 @@ export function ClinicalRecordForm({
         diagnosis: formData.diagnosis || null,
         observations: formData.observations || null,
         conduct: formData.conduct || null,
-        occupational_concept: formData.occupational_concept || null,
         eps_referral: formData.eps_referral,
+        eps_referral_details: formData.eps_referral_details || null,
 
         professional_name: formData.professional_name || null,
         professional_registration: formData.professional_registration || null,
         signature_professional: formData.signature_professional || null,
-        signature_patient: formData.signature_patient || null,
 
         ao_far_without_correction: formData.visual_acuity.ao_sin_correccion_lejana || null,
         ao_far_with_correction: formData.visual_acuity.ao_con_correccion_lejana || null,
@@ -652,7 +649,33 @@ export function ClinicalRecordForm({
                   </div>
                   <div className="space-y-1">
                     <Label>Cover Test</Label>
-                    <ExtSelect field="ext_cover_test" />
+                    <Select
+                      value={formData.ext_cover_test === "Ortoforia" ? "Ortoforia" : formData.ext_cover_test ? "otro" : ""}
+                      onValueChange={(v) => {
+                        if (v === "Ortoforia") {
+                          updateField("ext_cover_test", "Ortoforia")
+                          setShowCoverTestDetails(false)
+                        } else {
+                          updateField("ext_cover_test", "")
+                          setShowCoverTestDetails(true)
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-8"><SelectValue placeholder="-" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Ortoforia">Ortoforia</SelectItem>
+                        <SelectItem value="otro">Otro...</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {showCoverTestDetails && (
+                      <Input
+                        className="mt-2"
+                        value={formData.ext_cover_test === "Ortoforia" ? "" : formData.ext_cover_test}
+                        onChange={(e) => updateField("ext_cover_test", e.target.value)}
+                        placeholder="Describe el resultado..."
+                        disabled={loading}
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2 mt-4">
@@ -718,9 +741,9 @@ export function ClinicalRecordForm({
                     <thead>
                       <tr className="border-b">
                         <th className="p-2 text-left w-12"></th>
-                        <th className="p-2 text-center">K1</th>
-                        <th className="p-2 text-center">K2</th>
-                        <th className="p-2 text-center">Eje</th>
+                        <th className="p-2 text-center"></th>
+                        <th className="p-2 text-center"></th>
+                        <th className="p-2 text-center"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -783,63 +806,41 @@ export function ClinicalRecordForm({
                   <Textarea value={formData.conduct} onChange={(e) => updateField("conduct", e.target.value)} placeholder="Uso de lentes correctivos, control anual..." rows={3} disabled={loading} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Concepto Ocupacional</Label>
-                  <Select value={formData.occupational_concept} onValueChange={(v) => updateField("occupational_concept", v)}>
-                    <SelectTrigger><SelectValue placeholder="Seleccione el concepto" /></SelectTrigger>
-                    <SelectContent>
-                      {OCCUPATIONAL_CONCEPTS.map((concept) => (
-                        <SelectItem key={concept} value={concept}>{concept}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch id="eps_referral" checked={formData.eps_referral} onCheckedChange={(v) => updateField("eps_referral", v)} />
-                  <Label htmlFor="eps_referral">Remisión a EPS</Label>
+                  <div className="flex items-center space-x-2">
+                    <Switch id="eps_referral" checked={formData.eps_referral} onCheckedChange={(v) => updateField("eps_referral", v)} />
+                    <Label htmlFor="eps_referral">Remisión a EPS</Label>
+                  </div>
+                  {formData.eps_referral && (
+                    <Textarea
+                      value={formData.eps_referral_details}
+                      onChange={(e) => updateField("eps_referral_details", e.target.value)}
+                      placeholder="Especifica el motivo de remisión..."
+                      rows={2}
+                      disabled={loading}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Firmas</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Firma del Profesional</Label>
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
-                      <Upload className="size-4" />
-                      Subir imagen de firma
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        const reader = new FileReader()
-                        reader.onloadend = () => updateField("signature_professional", reader.result as string)
-                        reader.readAsDataURL(file)
-                      }} />
-                    </label>
-                    {formData.signature_professional && (
-                      <img src={formData.signature_professional} alt="Firma profesional" className="h-12 object-contain border rounded" />
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Firma del Paciente</Label>
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
-                      <Upload className="size-4" />
-                      Subir imagen de firma
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        const reader = new FileReader()
-                        reader.onloadend = () => updateField("signature_patient", reader.result as string)
-                        reader.readAsDataURL(file)
-                      }} />
-                    </label>
-                    {formData.signature_patient && (
-                      <img src={formData.signature_patient} alt="Firma paciente" className="h-12 object-contain border rounded" />
-                    )}
-                  </div>
+              <CardHeader><CardTitle>Firma del Profesional</CardTitle></CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
+                    <Upload className="size-4" />
+                    Subir imagen de firma
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      const reader = new FileReader()
+                      reader.onloadend = () => updateField("signature_professional", reader.result as string)
+                      reader.readAsDataURL(file)
+                    }} />
+                  </label>
+                  {formData.signature_professional && (
+                    <img src={formData.signature_professional} alt="Firma profesional" className="h-12 object-contain border rounded" />
+                  )}
                 </div>
               </CardContent>
             </Card>
