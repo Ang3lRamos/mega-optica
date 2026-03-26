@@ -34,13 +34,6 @@ interface ClinicalRecordFormProps {
   selectedPatient?: Patient | null
   record?: ClinicalRecord
   isEdit?: boolean
-}
-
-interface ClinicalRecordFormProps {
-  patients: PatientOption[]
-  selectedPatient?: Patient | null
-  record?: ClinicalRecord
-  isEdit?: boolean
   currentProfile?: {
     full_name: string
     professional_registration: string | null
@@ -196,15 +189,14 @@ export function ClinicalRecordForm({
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setError(null)
     setLoading(true)
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setError("No hay sesión activa"); return }
-      if (!formData.patient_id) { setError("Debes seleccionar un paciente"); setActiveTab(0); return }
+      if (!user) { setError("No hay sesión activa"); setLoading(false); return }
+      if (!formData.patient_id) { setError("Debes seleccionar un paciente"); setActiveTab(0); setLoading(false); return }
 
       const dataToSave = {
         patient_id: formData.patient_id,
@@ -334,6 +326,13 @@ export function ClinicalRecordForm({
     }))
   }
 
+  // Navega al tab de forma segura, sin propagar eventos al DOM
+  const goToTab = (e: React.MouseEvent, index: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setActiveTab(index)
+  }
+
   const ExtSelect = ({ field }: { field: string }) => (
     <Select
       value={formData[field as keyof typeof formData] as string}
@@ -363,542 +362,567 @@ export function ClinicalRecordForm({
   )
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-4">
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="size-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+    <div className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="size-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {/* Tabs */}
-        <div className="flex overflow-x-auto border-b gap-0">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* Tabs */}
+      <div className="flex overflow-x-auto border-b gap-0">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={(e) => goToTab(e, tab.id)}
+            className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* TAB 1: Datos del Examen */}
-        {activeTab === 0 && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader><CardTitle>Datos del Examen</CardTitle></CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="space-y-2">
-                  <Label>Paciente</Label>
-                  <Select value={formData.patient_id} onValueChange={(v) => updateField("patient_id", v)} disabled={!!selectedPatient}>
-                    <SelectTrigger><SelectValue placeholder="Seleccionar paciente" /></SelectTrigger>
-                    <SelectContent>
-                      {patients.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.full_name} - {p.identification_number}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Fecha del Examen</Label>
-                  <Input type="date" value={formData.exam_date} onChange={(e) => updateField("exam_date", e.target.value)} required disabled={loading} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tipo de Visiometría</Label>
-                  <Select value={formData.exam_type} onValueChange={(v) => updateField("exam_type", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(EXAM_TYPE_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Datos del Profesional</CardTitle></CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Nombre del Profesional</Label>
-                  <Input value={formData.professional_name} onChange={(e) => updateField("professional_name", e.target.value)} placeholder="Nombre completo" disabled={loading} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Registro Profesional / T.P.</Label>
-                  <Input value={formData.professional_registration} onChange={(e) => updateField("professional_registration", e.target.value)} placeholder="TP 12345" disabled={loading} />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label>SST</Label>
-                  <Input value={formData.sst} onChange={(e) => updateField("sst", e.target.value)} placeholder="Especialidad / SST" disabled={loading} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Motivo de Consulta</CardTitle></CardHeader>
-              <CardContent>
-                <Textarea value={formData.consultation_reason} onChange={(e) => updateField("consultation_reason", e.target.value)} placeholder="Describa el motivo de la consulta..." rows={4} disabled={loading} />
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* TAB 2: Antecedentes */}
-        {activeTab === 1 && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader><CardTitle>Antecedentes Personales</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {PERSONAL_HISTORY_OPTIONS.map((option) => (
-                    <div key={option} className="flex items-center space-x-2">
-                      <Checkbox id={`personal-${option}`} checked={formData.personal_history.includes(option)} onCheckedChange={() => toggleArrayField("personal_history", option)} />
-                      <Label htmlFor={`personal-${option}`} className="cursor-pointer">{option}</Label>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  <Label>Otros antecedentes personales</Label>
-                  <Textarea value={formData.personal_history_other} onChange={(e) => updateField("personal_history_other", e.target.value)} placeholder="Otros antecedentes relevantes..." rows={2} disabled={loading} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Antecedentes Familiares</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {FAMILY_HISTORY_OPTIONS.map((option) => (
-                    <div key={option} className="flex items-center space-x-2">
-                      <Checkbox id={`family-${option}`} checked={formData.family_history.includes(option)} onCheckedChange={() => toggleArrayField("family_history", option)} />
-                      <Label htmlFor={`family-${option}`} className="cursor-pointer">{option}</Label>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  <Label>Otros antecedentes familiares</Label>
-                  <Textarea value={formData.family_history_other} onChange={(e) => updateField("family_history_other", e.target.value)} placeholder="Otros antecedentes relevantes..." rows={2} disabled={loading} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Antecedentes Ocupacionales</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label>Cargo</Label>
-                    <Input value={formData.time_in_job} onChange={(e) => updateField("time_in_job", e.target.value)} placeholder="Operario, administrativo..." disabled={loading} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Empresa</Label>
-                    <Input value={formData.protection_type} onChange={(e) => updateField("protection_type", e.target.value)} placeholder="Nombre de la empresa" disabled={loading} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Tiempo en el cargo</Label>
-                    <Input placeholder="2 años, 6 meses..." disabled={loading} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-medium">Exposiciones</Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {OCCUPATIONAL_EXPOSURES.map((option) => (
-                      <div key={option} className="flex items-center space-x-2">
-                        <Checkbox id={`exposure-${option}`} checked={formData.occupational_exposures.includes(option)} onCheckedChange={() => toggleArrayField("occupational_exposures", option)} />
-                        <Label htmlFor={`exposure-${option}`} className="cursor-pointer">{option}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="previous_exam" checked={formData.previous_exam} onCheckedChange={(v) => updateField("previous_exam", v)} />
-                    <Label htmlFor="previous_exam">¿Visiometría anterior?</Label>
-                  </div>
-                  {formData.previous_exam && (
-                    <div className="space-y-2 ml-6">
-                      <Label>Fecha último examen</Label>
-                      <Input type="date" value={formData.previous_exam_date} onChange={(e) => updateField("previous_exam_date", e.target.value)} disabled={loading} />
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-2">
-                    <Switch id="has_prescribed_lenses" checked={formData.has_prescribed_lenses} onCheckedChange={(v) => updateField("has_prescribed_lenses", v)} />
-                    <Label htmlFor="has_prescribed_lenses">¿Tiene lentes formulados?</Label>
-                  </div>
-                  {formData.has_prescribed_lenses && (
-                    <div className="space-y-2 ml-6">
-                      <Label>Forma de uso</Label>
-                      <Select value={formData.lens_usage} onValueChange={(v) => updateField("lens_usage", v)}>
-                        <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="permanentes">Permanentes</SelectItem>
-                          <SelectItem value="ocasionales">Ocasionales</SelectItem>
-                          <SelectItem value="para_ver_cerca">Para ver de cerca</SelectItem>
-                          <SelectItem value="para_ver_lejos">Para ver de lejos</SelectItem>
-                          <SelectItem value="otros">Otros</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-2">
-                    <Switch id="ocular_surgery" checked={formData.ocular_surgery} onCheckedChange={(v) => updateField("ocular_surgery", v)} />
-                    <Label htmlFor="ocular_surgery">¿Cirugía ocular?</Label>
-                  </div>
-                  {formData.ocular_surgery && (
-                    <div className="grid gap-2 sm:grid-cols-2 ml-6">
-                      <Input placeholder="¿Cuál?" value={formData.surgery_details} onChange={(e) => updateField("surgery_details", e.target.value)} disabled={loading} />
-                      <Input type="date" value={formData.surgery_date} onChange={(e) => updateField("surgery_date", e.target.value)} disabled={loading} />
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-2">
-                    <Switch id="current_ocular_symptoms" checked={formData.current_ocular_symptoms} onCheckedChange={(v) => updateField("current_ocular_symptoms", v)} />
-                    <Label htmlFor="current_ocular_symptoms">¿Sintomatología ocular actual?</Label>
-                  </div>
-                  {formData.current_ocular_symptoms && (
-                    <div className="ml-6">
-                      <Input placeholder="¿Cuál?" value={formData.symptoms_details} onChange={(e) => updateField("symptoms_details", e.target.value)} disabled={loading} />
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* TAB 3: Agudeza Visual */}
-        {activeTab === 2 && (
+      {/* TAB 1: Datos del Examen */}
+      {activeTab === 0 && (
+        <div className="space-y-4">
           <Card>
-            <CardHeader><CardTitle>Agudeza Visual</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Datos del Examen</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Paciente</Label>
+                <Select value={formData.patient_id} onValueChange={(v) => updateField("patient_id", v)} disabled={!!selectedPatient}>
+                  <SelectTrigger><SelectValue placeholder="Seleccionar paciente" /></SelectTrigger>
+                  <SelectContent>
+                    {patients.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.full_name} - {p.identification_number}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Fecha del Examen</Label>
+                <Input type="date" value={formData.exam_date} onChange={(e) => updateField("exam_date", e.target.value)} disabled={loading} />
+              </div>
+              <div className="space-y-2">
+                <Label>Tipo de Visiometría</Label>
+                <Select value={formData.exam_type} onValueChange={(v) => updateField("exam_type", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(EXAM_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Datos del Profesional</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Nombre del Profesional</Label>
+                <Input value={formData.professional_name} onChange={(e) => updateField("professional_name", e.target.value)} placeholder="Nombre completo" disabled={loading} />
+              </div>
+              <div className="space-y-2">
+                <Label>Registro Profesional / T.P.</Label>
+                <Input value={formData.professional_registration} onChange={(e) => updateField("professional_registration", e.target.value)} placeholder="TP 12345" disabled={loading} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>SST</Label>
+                <Input value={formData.sst} onChange={(e) => updateField("sst", e.target.value)} placeholder="Especialidad / SST" disabled={loading} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Motivo de Consulta</CardTitle></CardHeader>
+            <CardContent>
+              <Textarea value={formData.consultation_reason} onChange={(e) => updateField("consultation_reason", e.target.value)} placeholder="Describa el motivo de la consulta..." rows={4} disabled={loading} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 2: Antecedentes */}
+      {activeTab === 1 && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Antecedentes Personales</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {PERSONAL_HISTORY_OPTIONS.map((option) => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <Checkbox id={`personal-${option}`} checked={formData.personal_history.includes(option)} onCheckedChange={() => toggleArrayField("personal_history", option)} />
+                    <Label htmlFor={`personal-${option}`} className="cursor-pointer">{option}</Label>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <Label>Otros antecedentes personales</Label>
+                <Textarea value={formData.personal_history_other} onChange={(e) => updateField("personal_history_other", e.target.value)} placeholder="Otros antecedentes relevantes..." rows={2} disabled={loading} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Antecedentes Familiares</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {FAMILY_HISTORY_OPTIONS.map((option) => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <Checkbox id={`family-${option}`} checked={formData.family_history.includes(option)} onCheckedChange={() => toggleArrayField("family_history", option)} />
+                    <Label htmlFor={`family-${option}`} className="cursor-pointer">{option}</Label>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <Label>Otros antecedentes familiares</Label>
+                <Textarea value={formData.family_history_other} onChange={(e) => updateField("family_history_other", e.target.value)} placeholder="Otros antecedentes relevantes..." rows={2} disabled={loading} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Antecedentes Ocupacionales</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Cargo</Label>
+                  <Input value={formData.time_in_job} onChange={(e) => updateField("time_in_job", e.target.value)} placeholder="Operario, administrativo..." disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Empresa</Label>
+                  <Input value={formData.protection_type} onChange={(e) => updateField("protection_type", e.target.value)} placeholder="Nombre de la empresa" disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tiempo en el cargo</Label>
+                  <Input placeholder="2 años, 6 meses..." disabled={loading} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="font-medium">Exposiciones</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {OCCUPATIONAL_EXPOSURES.map((option) => (
+                    <div key={option} className="flex items-center space-x-2">
+                      <Checkbox id={`exposure-${option}`} checked={formData.occupational_exposures.includes(option)} onCheckedChange={() => toggleArrayField("occupational_exposures", option)} />
+                      <Label htmlFor={`exposure-${option}`} className="cursor-pointer">{option}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Switch id="previous_exam" checked={formData.previous_exam} onCheckedChange={(v) => updateField("previous_exam", v)} />
+                  <Label htmlFor="previous_exam">¿Visiometría anterior?</Label>
+                </div>
+                {formData.previous_exam && (
+                  <div className="space-y-2 ml-6">
+                    <Label>Fecha último examen</Label>
+                    <Input type="date" value={formData.previous_exam_date} onChange={(e) => updateField("previous_exam_date", e.target.value)} disabled={loading} />
+                  </div>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Switch id="has_prescribed_lenses" checked={formData.has_prescribed_lenses} onCheckedChange={(v) => updateField("has_prescribed_lenses", v)} />
+                  <Label htmlFor="has_prescribed_lenses">¿Tiene lentes formulados?</Label>
+                </div>
+                {formData.has_prescribed_lenses && (
+                  <div className="space-y-2 ml-6">
+                    <Label>Forma de uso</Label>
+                    <Select value={formData.lens_usage} onValueChange={(v) => updateField("lens_usage", v)}>
+                      <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="permanentes">Permanentes</SelectItem>
+                        <SelectItem value="ocasionales">Ocasionales</SelectItem>
+                        <SelectItem value="para_ver_cerca">Para ver de cerca</SelectItem>
+                        <SelectItem value="para_ver_lejos">Para ver de lejos</SelectItem>
+                        <SelectItem value="otros">Otros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Switch id="ocular_surgery" checked={formData.ocular_surgery} onCheckedChange={(v) => updateField("ocular_surgery", v)} />
+                  <Label htmlFor="ocular_surgery">¿Cirugía ocular?</Label>
+                </div>
+                {formData.ocular_surgery && (
+                  <div className="grid gap-2 sm:grid-cols-2 ml-6">
+                    <Input placeholder="¿Cuál?" value={formData.surgery_details} onChange={(e) => updateField("surgery_details", e.target.value)} disabled={loading} />
+                    <Input type="date" value={formData.surgery_date} onChange={(e) => updateField("surgery_date", e.target.value)} disabled={loading} />
+                  </div>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Switch id="current_ocular_symptoms" checked={formData.current_ocular_symptoms} onCheckedChange={(v) => updateField("current_ocular_symptoms", v)} />
+                  <Label htmlFor="current_ocular_symptoms">¿Sintomatología ocular actual?</Label>
+                </div>
+                {formData.current_ocular_symptoms && (
+                  <div className="ml-6">
+                    <Input placeholder="¿Cuál?" value={formData.symptoms_details} onChange={(e) => updateField("symptoms_details", e.target.value)} disabled={loading} />
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 3: Agudeza Visual */}
+      {activeTab === 2 && (
+        <Card>
+          <CardHeader><CardTitle>Agudeza Visual</CardTitle></CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="p-2 text-left w-16"></th>
+                    <th className="p-2 text-center" colSpan={2}>Visión Lejana</th>
+                    <th className="p-2 text-center" colSpan={2}>Visión Cercana</th>
+                    <th className="p-2 text-center">PH</th>
+                  </tr>
+                  <tr className="border-b">
+                    <th className="p-2 text-left"></th>
+                    <th className="p-2 text-center text-xs">Sin Corrección</th>
+                    <th className="p-2 text-center text-xs">Con Corrección</th>
+                    <th className="p-2 text-center text-xs">Sin Corrección</th>
+                    <th className="p-2 text-center text-xs">Con Corrección</th>
+                    <th className="p-2 text-center text-xs">Agujero Estenopeico</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="p-2 font-medium">OD</td>
+                    <td className="p-2"><VASelect subfield="od_sin_correccion_lejana" /></td>
+                    <td className="p-2"><VASelect subfield="od_con_correccion_lejana" /></td>
+                    <td className="p-2"><VASelect subfield="od_sin_correccion_cercana" /></td>
+                    <td className="p-2"><VASelect subfield="od_con_correccion_cercana" /></td>
+                    <td className="p-2"><Input className="h-8" value={formData.ph_od} onChange={(e) => updateField("ph_od", e.target.value)} placeholder="-" disabled={loading} /></td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-2 font-medium">OI</td>
+                    <td className="p-2"><VASelect subfield="oi_sin_correccion_lejana" /></td>
+                    <td className="p-2"><VASelect subfield="oi_con_correccion_lejana" /></td>
+                    <td className="p-2"><VASelect subfield="oi_sin_correccion_cercana" /></td>
+                    <td className="p-2"><VASelect subfield="oi_con_correccion_cercana" /></td>
+                    <td className="p-2"><Input className="h-8" value={formData.ph_oi} onChange={(e) => updateField("ph_oi", e.target.value)} placeholder="-" disabled={loading} /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 font-medium text-muted-foreground">AO</td>
+                    <td className="p-2"><VASelect subfield="ao_sin_correccion_lejana" /></td>
+                    <td className="p-2"><VASelect subfield="ao_con_correccion_lejana" /></td>
+                    <td className="p-2"><VASelect subfield="ao_sin_correccion_cercana" /></td>
+                    <td className="p-2"><VASelect subfield="ao_con_correccion_cercana" /></td>
+                    <td className="p-2"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* TAB 4: Examen Clínico */}
+      {activeTab === 3 && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Examen Externo</CardTitle></CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="p-2 text-left w-16"></th>
-                      <th className="p-2 text-center" colSpan={2}>Visión Lejana</th>
-                      <th className="p-2 text-center" colSpan={2}>Visión Cercana</th>
-                      <th className="p-2 text-center">PH</th>
+                      <th className="p-2 text-left w-32"></th>
+                      <th className="p-2 text-center">OD (Derecho)</th>
+                      <th className="p-2 text-center">OI (Izquierdo)</th>
                     </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label: "Párpados", od: "ext_parpados_od", oi: "ext_parpados_oi" },
+                      { label: "Conjuntiva", od: "ext_conjuntiva_od", oi: "ext_conjuntiva_oi" },
+                      { label: "Córnea", od: "ext_cornea_od", oi: "ext_cornea_oi" },
+                      { label: "Iris", od: "ext_iris_od", oi: "ext_iris_oi" },
+                      { label: "Pupila", od: "ext_pupila_od", oi: "ext_pupila_oi" },
+                      { label: "Cristalino", od: "ext_cristalino_od", oi: "ext_cristalino_oi" },
+                    ].map((row) => (
+                      <tr key={row.label} className="border-b">
+                        <td className="p-2 font-medium">{row.label}</td>
+                        <td className="p-2"><ExtSelect field={row.od} /></td>
+                        <td className="p-2"><ExtSelect field={row.oi} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 mt-4">
+                <div className="space-y-1">
+                  <Label>Motilidad</Label>
+                  <ExtSelect field="ext_motilidad" />
+                </div>
+                <div className="space-y-1">
+                  <Label>Cover Test</Label>
+                  <Select
+                    value={formData.ext_cover_test === "Ortoforia" ? "Ortoforia" : formData.ext_cover_test ? "otro" : ""}
+                    onValueChange={(v) => {
+                      if (v === "Ortoforia") {
+                        updateField("ext_cover_test", "Ortoforia")
+                        setShowCoverTestDetails(false)
+                      } else {
+                        updateField("ext_cover_test", "")
+                        setShowCoverTestDetails(true)
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-8"><SelectValue placeholder="-" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Ortoforia">Ortoforia</SelectItem>
+                      <SelectItem value="otro">Otro...</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {showCoverTestDetails && (
+                    <Input
+                      className="mt-2"
+                      value={formData.ext_cover_test === "Ortoforia" ? "" : formData.ext_cover_test}
+                      onChange={(e) => updateField("ext_cover_test", e.target.value)}
+                      placeholder="Describe el resultado..."
+                      disabled={loading}
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2 mt-4">
+                <Label>Observaciones examen externo</Label>
+                <Textarea value={formData.ext_observations} onChange={(e) => updateField("ext_observations", e.target.value)} rows={2} disabled={loading} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Refracción</CardTitle></CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
                     <tr className="border-b">
-                      <th className="p-2 text-left"></th>
-                      <th className="p-2 text-center text-xs">Sin Corrección</th>
-                      <th className="p-2 text-center text-xs">Con Corrección</th>
-                      <th className="p-2 text-center text-xs">Sin Corrección</th>
-                      <th className="p-2 text-center text-xs">Con Corrección</th>
-                      <th className="p-2 text-center text-xs">Agujero Estenopeico</th>
+                      <th className="p-2 text-left w-12"></th>
+                      <th className="p-2 text-center">Esfera</th>
+                      <th className="p-2 text-center">Cilindro</th>
+                      <th className="p-2 text-center">Eje</th>
+                      <th className="p-2 text-center">ADD</th>
+                      <th className="p-2 text-center">AV</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
                       <td className="p-2 font-medium">OD</td>
-                      <td className="p-2"><VASelect subfield="od_sin_correccion_lejana" /></td>
-                      <td className="p-2"><VASelect subfield="od_con_correccion_lejana" /></td>
-                      <td className="p-2"><VASelect subfield="od_sin_correccion_cercana" /></td>
-                      <td className="p-2"><VASelect subfield="od_con_correccion_cercana" /></td>
-                      <td className="p-2"><Input className="h-8" value={formData.ph_od} onChange={(e) => updateField("ph_od", e.target.value)} placeholder="-" disabled={loading} /></td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2 font-medium">OI</td>
-                      <td className="p-2"><VASelect subfield="oi_sin_correccion_lejana" /></td>
-                      <td className="p-2"><VASelect subfield="oi_con_correccion_lejana" /></td>
-                      <td className="p-2"><VASelect subfield="oi_sin_correccion_cercana" /></td>
-                      <td className="p-2"><VASelect subfield="oi_con_correccion_cercana" /></td>
-                      <td className="p-2"><Input className="h-8" value={formData.ph_oi} onChange={(e) => updateField("ph_oi", e.target.value)} placeholder="-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_od_esfera} onChange={(e) => updateField("refraction_od_esfera", e.target.value)} placeholder="+/-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_od_cilindro} onChange={(e) => updateField("refraction_od_cilindro", e.target.value)} placeholder="+/-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_od_eje} onChange={(e) => updateField("refraction_od_eje", e.target.value)} placeholder="0-180" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_od_add} onChange={(e) => updateField("refraction_od_add", e.target.value)} placeholder="+/-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_od_av} onChange={(e) => updateField("refraction_od_av", e.target.value)} placeholder="20/" disabled={loading} /></td>
                     </tr>
                     <tr>
-                      <td className="p-2 font-medium text-muted-foreground">AO</td>
-                      <td className="p-2"><VASelect subfield="ao_sin_correccion_lejana" /></td>
-                      <td className="p-2"><VASelect subfield="ao_con_correccion_lejana" /></td>
-                      <td className="p-2"><VASelect subfield="ao_sin_correccion_cercana" /></td>
-                      <td className="p-2"><VASelect subfield="ao_con_correccion_cercana" /></td>
-                      <td className="p-2"></td>
+                      <td className="p-2 font-medium">OI</td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_oi_esfera} onChange={(e) => updateField("refraction_oi_esfera", e.target.value)} placeholder="+/-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_oi_cilindro} onChange={(e) => updateField("refraction_oi_cilindro", e.target.value)} placeholder="+/-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_oi_eje} onChange={(e) => updateField("refraction_oi_eje", e.target.value)} placeholder="0-180" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_oi_add} onChange={(e) => updateField("refraction_oi_add", e.target.value)} placeholder="+/-" disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.refraction_oi_av} onChange={(e) => updateField("refraction_oi_av", e.target.value)} placeholder="20/" disabled={loading} /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 mt-4">
+                <div className="space-y-2">
+                  <Label>DP (mm)</Label>
+                  <Input value={formData.refraction_dp} onChange={(e) => updateField("refraction_dp", e.target.value)} placeholder="64" disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tipo de lente recomendado</Label>
+                  <Input value={formData.refraction_lens_type} onChange={(e) => updateField("refraction_lens_type", e.target.value)} placeholder="Monofocal, bifocal, progresivo..." disabled={loading} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Queratometría</CardTitle></CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="p-2 text-left w-12"></th>
+                      <th className="p-2 text-center">K1</th>
+                      <th className="p-2 text-center">K2</th>
+                      <th className="p-2 text-center">Eje</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="p-2 font-medium">OD</td>
+                      <td className="p-2"><Input className="h-8" value={formData.keratometry_od_k1} onChange={(e) => updateField("keratometry_od_k1", e.target.value)} disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.keratometry_od_k2} onChange={(e) => updateField("keratometry_od_k2", e.target.value)} disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.keratometry_od_eje} onChange={(e) => updateField("keratometry_od_eje", e.target.value)} disabled={loading} /></td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-medium">OI</td>
+                      <td className="p-2"><Input className="h-8" value={formData.keratometry_oi_k1} onChange={(e) => updateField("keratometry_oi_k1", e.target.value)} disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.keratometry_oi_k2} onChange={(e) => updateField("keratometry_oi_k2", e.target.value)} disabled={loading} /></td>
+                      <td className="p-2"><Input className="h-8" value={formData.keratometry_oi_eje} onChange={(e) => updateField("keratometry_oi_eje", e.target.value)} disabled={loading} /></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </CardContent>
           </Card>
-        )}
 
-        {/* TAB 4: Examen Clínico */}
-        {activeTab === 3 && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader><CardTitle>Examen Externo</CardTitle></CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-2 text-left w-32"></th>
-                        <th className="p-2 text-center">OD (Derecho)</th>
-                        <th className="p-2 text-center">OI (Izquierdo)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { label: "Párpados", od: "ext_parpados_od", oi: "ext_parpados_oi" },
-                        { label: "Conjuntiva", od: "ext_conjuntiva_od", oi: "ext_conjuntiva_oi" },
-                        { label: "Córnea", od: "ext_cornea_od", oi: "ext_cornea_oi" },
-                        { label: "Iris", od: "ext_iris_od", oi: "ext_iris_oi" },
-                        { label: "Pupila", od: "ext_pupila_od", oi: "ext_pupila_oi" },
-                        { label: "Cristalino", od: "ext_cristalino_od", oi: "ext_cristalino_oi" },
-                      ].map((row) => (
-                        <tr key={row.label} className="border-b">
-                          <td className="p-2 font-medium">{row.label}</td>
-                          <td className="p-2"><ExtSelect field={row.od} /></td>
-                          <td className="p-2"><ExtSelect field={row.oi} /></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 mt-4">
-                  <div className="space-y-1">
-                    <Label>Motilidad</Label>
-                    <ExtSelect field="ext_motilidad" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Cover Test</Label>
-                    <Select
-                      value={formData.ext_cover_test === "Ortoforia" ? "Ortoforia" : formData.ext_cover_test ? "otro" : ""}
-                      onValueChange={(v) => {
-                        if (v === "Ortoforia") {
-                          updateField("ext_cover_test", "Ortoforia")
-                          setShowCoverTestDetails(false)
-                        } else {
-                          updateField("ext_cover_test", "")
-                          setShowCoverTestDetails(true)
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="h-8"><SelectValue placeholder="-" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Ortoforia">Ortoforia</SelectItem>
-                        <SelectItem value="otro">Otro...</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {showCoverTestDetails && (
-                      <Input
-                        className="mt-2"
-                        value={formData.ext_cover_test === "Ortoforia" ? "" : formData.ext_cover_test}
-                        onChange={(e) => updateField("ext_cover_test", e.target.value)}
-                        placeholder="Describe el resultado..."
-                        disabled={loading}
-                      />
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2 mt-4">
-                  <Label>Observaciones examen externo</Label>
-                  <Textarea value={formData.ext_observations} onChange={(e) => updateField("ext_observations", e.target.value)} rows={2} disabled={loading} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Refracción</CardTitle></CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-2 text-left w-12"></th>
-                        <th className="p-2 text-center">Esfera</th>
-                        <th className="p-2 text-center">Cilindro</th>
-                        <th className="p-2 text-center">Eje</th>
-                        <th className="p-2 text-center">ADD</th>
-                        <th className="p-2 text-center">AV</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b">
-                        <td className="p-2 font-medium">OD</td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_od_esfera} onChange={(e) => updateField("refraction_od_esfera", e.target.value)} placeholder="+/-" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_od_cilindro} onChange={(e) => updateField("refraction_od_cilindro", e.target.value)} placeholder="+/-" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_od_eje} onChange={(e) => updateField("refraction_od_eje", e.target.value)} placeholder="0-180" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_od_add} onChange={(e) => updateField("refraction_od_add", e.target.value)} placeholder="+/-" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_od_av} onChange={(e) => updateField("refraction_od_av", e.target.value)} placeholder="20/" disabled={loading} /></td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-medium">OI</td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_oi_esfera} onChange={(e) => updateField("refraction_oi_esfera", e.target.value)} placeholder="+/-" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_oi_cilindro} onChange={(e) => updateField("refraction_oi_cilindro", e.target.value)} placeholder="+/-" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_oi_eje} onChange={(e) => updateField("refraction_oi_eje", e.target.value)} placeholder="0-180" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_oi_add} onChange={(e) => updateField("refraction_oi_add", e.target.value)} placeholder="+/-" disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.refraction_oi_av} onChange={(e) => updateField("refraction_oi_av", e.target.value)} placeholder="20/" disabled={loading} /></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 mt-4">
-                  <div className="space-y-2">
-                    <Label>DP (mm)</Label>
-                    <Input value={formData.refraction_dp} onChange={(e) => updateField("refraction_dp", e.target.value)} placeholder="64" disabled={loading} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Tipo de lente recomendado</Label>
-                    <Input value={formData.refraction_lens_type} onChange={(e) => updateField("refraction_lens_type", e.target.value)} placeholder="Monofocal, bifocal, progresivo..." disabled={loading} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Queratometría</CardTitle></CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="p-2 text-left w-12"></th>
-                        <th className="p-2 text-center"></th>
-                        <th className="p-2 text-center"></th>
-                        <th className="p-2 text-center"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b">
-                        <td className="p-2 font-medium">OD</td>
-                        <td className="p-2"><Input className="h-8" value={formData.keratometry_od_k1} onChange={(e) => updateField("keratometry_od_k1", e.target.value)} disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.keratometry_od_k2} onChange={(e) => updateField("keratometry_od_k2", e.target.value)} disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.keratometry_od_eje} onChange={(e) => updateField("keratometry_od_eje", e.target.value)} disabled={loading} /></td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-medium">OI</td>
-                        <td className="p-2"><Input className="h-8" value={formData.keratometry_oi_k1} onChange={(e) => updateField("keratometry_oi_k1", e.target.value)} disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.keratometry_oi_k2} onChange={(e) => updateField("keratometry_oi_k2", e.target.value)} disabled={loading} /></td>
-                        <td className="p-2"><Input className="h-8" value={formData.keratometry_oi_eje} onChange={(e) => updateField("keratometry_oi_eje", e.target.value)} disabled={loading} /></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Test Complementarios</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Ishihara</Label>
-                    <Input value={formData.test_ishihara} onChange={(e) => updateField("test_ishihara", e.target.value)} placeholder="Normal / Alterado" disabled={loading} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Estereopsis</Label>
-                    <Input value={formData.test_estereopsis} onChange={(e) => updateField("test_estereopsis", e.target.value)} placeholder="Seg arco" disabled={loading} />
-                  </div>
+          <Card>
+            <CardHeader><CardTitle>Test Complementarios</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Ishihara</Label>
+                  <Input value={formData.test_ishihara} onChange={(e) => updateField("test_ishihara", e.target.value)} placeholder="Normal / Alterado" disabled={loading} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Otros test</Label>
-                  <Textarea value={formData.test_others} onChange={(e) => updateField("test_others", e.target.value)} placeholder="Otros examenes complementarios..." rows={2} disabled={loading} />
+                  <Label>Estereopsis</Label>
+                  <Input value={formData.test_estereopsis} onChange={(e) => updateField("test_estereopsis", e.target.value)} placeholder="Seg arco" disabled={loading} />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </div>
+              <div className="space-y-2">
+                <Label>Otros test</Label>
+                <Textarea value={formData.test_others} onChange={(e) => updateField("test_others", e.target.value)} placeholder="Otros examenes complementarios..." rows={2} disabled={loading} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        {/* TAB 5: Diagnóstico */}
-        {activeTab === 4 && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader><CardTitle>Diagnóstico y Observaciones</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Diagnóstico</Label>
-                  <Textarea value={formData.diagnosis} onChange={(e) => updateField("diagnosis", e.target.value)} placeholder="Ingresa el diagnóstico..." rows={3} disabled={loading} />
+      {/* TAB 5: Diagnóstico */}
+      {activeTab === 4 && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Diagnóstico y Observaciones</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Diagnóstico</Label>
+                <Textarea value={formData.diagnosis} onChange={(e) => updateField("diagnosis", e.target.value)} placeholder="Ingresa el diagnóstico..." rows={3} disabled={loading} />
+              </div>
+              <div className="space-y-2">
+                <Label>Observaciones</Label>
+                <Textarea value={formData.observations} onChange={(e) => updateField("observations", e.target.value)} placeholder="Observaciones adicionales..." rows={3} disabled={loading} />
+              </div>
+              <div className="space-y-2">
+                <Label>Conducta / Recomendaciones</Label>
+                <Textarea value={formData.conduct} onChange={(e) => updateField("conduct", e.target.value)} placeholder="Uso de lentes correctivos, control anual..." rows={3} disabled={loading} />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Switch id="eps_referral" checked={formData.eps_referral} onCheckedChange={(v) => updateField("eps_referral", v)} />
+                  <Label htmlFor="eps_referral">Remisión a EPS</Label>
                 </div>
-                <div className="space-y-2">
-                  <Label>Observaciones</Label>
-                  <Textarea value={formData.observations} onChange={(e) => updateField("observations", e.target.value)} placeholder="Observaciones adicionales..." rows={3} disabled={loading} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Conducta / Recomendaciones</Label>
-                  <Textarea value={formData.conduct} onChange={(e) => updateField("conduct", e.target.value)} placeholder="Uso de lentes correctivos, control anual..." rows={3} disabled={loading} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="eps_referral" checked={formData.eps_referral} onCheckedChange={(v) => updateField("eps_referral", v)} />
-                    <Label htmlFor="eps_referral">Remisión a EPS</Label>
-                  </div>
-                  {formData.eps_referral && (
-                    <Textarea
-                      value={formData.eps_referral_details}
-                      onChange={(e) => updateField("eps_referral_details", e.target.value)}
-                      placeholder="Especifica el motivo de remisión..."
-                      rows={2}
-                      disabled={loading}
-                    />
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Firma del Profesional</CardTitle></CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors">
-                    <Upload className="size-4" />
-                    Subir imagen de firma
-                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                      const file = e.target.files?.[0]
-                      if (!file) return
-                      const reader = new FileReader()
-                      reader.onloadend = () => updateField("signature_professional", reader.result as string)
-                      reader.readAsDataURL(file)
-                    }} />
-                  </label>
-                  {formData.signature_professional && (
-                    <img src={formData.signature_professional} alt="Firma profesional" className="h-12 object-contain border rounded" />
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Navegación */}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-          <Button type="button" variant="outline" asChild disabled={loading}>
-            <Link href="/dashboard/historias">
-              <ArrowLeft className="mr-2 size-4" />
-              Cancelar
-            </Link>
-          </Button>
-          <div className="flex gap-2">
-            {activeTab > 0 && (
-              <Button type="button" variant="outline" onClick={() => setActiveTab(activeTab - 1)} disabled={loading}>
-                <ChevronLeft className="mr-2 size-4" />
-                Anterior
-              </Button>
-            )}
-            {activeTab < TABS.length - 1 ? (
-              <Button type="button" onClick={() => setActiveTab(activeTab + 1)} disabled={loading}>
-                Siguiente
-                <ChevronRight className="ml-2 size-4" />
-              </Button>
-            ) : (
-              <Button type="submit" disabled={loading}>
-                {loading ? (
-                  <><Spinner className="mr-2" />Guardando...</>
-                ) : (
-                  <><Save className="mr-2 size-4" />{isEdit ? "Actualizar Historia" : "Guardar Historia"}</>
+                {formData.eps_referral && (
+                  <Textarea
+                    value={formData.eps_referral_details}
+                    onChange={(e) => updateField("eps_referral_details", e.target.value)}
+                    placeholder="Especifica el motivo de remisión..."
+                    rows={2}
+                    disabled={loading}
+                  />
                 )}
-              </Button>
-            )}
-          </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Firma del Profesional</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div
+                  role="button"
+                  onClick={() => document.getElementById("signature-upload")?.click()}
+                  className="flex items-center gap-2 cursor-pointer border rounded-md px-4 py-2 text-sm hover:bg-accent transition-colors"
+                >
+                  <Upload className="size-4" />
+                  Subir imagen de firma
+                </div>
+                <input
+                  id="signature-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onloadend = () => updateField("signature_professional", reader.result as string)
+                    reader.readAsDataURL(file)
+                  }}
+                />
+                {formData.signature_professional && (
+                  <img src={formData.signature_professional} alt="Firma profesional" className="h-12 object-contain border rounded" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Navegación — sin ningún <form>, el submit llama handleSubmit directamente */}
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between mt-4">
+        <Button type="button" variant="outline" asChild disabled={loading}>
+          <Link href="/dashboard/historias">
+            <ArrowLeft className="mr-2 size-4" />
+            Cancelar
+          </Link>
+        </Button>
+        <div className="flex gap-2">
+          {activeTab > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => goToTab(e, activeTab - 1)}
+              disabled={loading}
+            >
+              <ChevronLeft className="mr-2 size-4" />
+              Anterior
+            </Button>
+          )}
+          {activeTab < TABS.length - 1 ? (
+            <Button
+              type="button"
+              onClick={(e) => goToTab(e, activeTab + 1)}
+              disabled={loading}
+            >
+              Siguiente
+              <ChevronRight className="ml-2 size-4" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={loading}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSubmit()
+              }}
+            >
+              {loading ? (
+                <><Spinner className="mr-2" />Guardando...</>
+              ) : (
+                <><Save className="mr-2 size-4" />{isEdit ? "Actualizar Historia" : "Guardar Historia"}</>
+              )}
+            </Button>
+          )}
         </div>
       </div>
-    </form>
+    </div>
   )
 }
