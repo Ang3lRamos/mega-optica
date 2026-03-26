@@ -491,6 +491,9 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               <Text style={{ fontSize: 7 }}>
                 {record.professional_registration ? `TP: ${record.professional_registration}` : "Optómetra"}
               </Text>
+              {record.sst && (
+                <Text style={{ fontSize: 7 }}>SST: {record.sst}</Text>
+              )}
             </View>
           </View>
           {/* <View style={styles.signatureBox}>

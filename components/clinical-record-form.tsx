@@ -36,6 +36,19 @@ interface ClinicalRecordFormProps {
   isEdit?: boolean
 }
 
+interface ClinicalRecordFormProps {
+  patients: PatientOption[]
+  selectedPatient?: Patient | null
+  record?: ClinicalRecord
+  isEdit?: boolean
+  currentProfile?: {
+    full_name: string
+    professional_registration: string | null
+    sst: string | null
+    role: string
+  } | null
+}
+
 const VISUAL_ACUITY_OPTIONS = [
   "20/20", "20/25", "20/30", "20/40", "20/50", "20/60", "20/70",
   "20/80", "20/100", "20/200", "20/400", "CD", "MM", "PL", "NPL"
@@ -68,6 +81,7 @@ export function ClinicalRecordForm({
   selectedPatient,
   record,
   isEdit = false,
+  currentProfile,
 }: ClinicalRecordFormProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -166,8 +180,9 @@ export function ClinicalRecordForm({
     eps_referral: record?.eps_referral || false,
     eps_referral_details: record?.eps_referral_details || "",
 
-    professional_name: record?.professional_name || "",
-    professional_registration: record?.professional_registration || "",
+    professional_name: record?.professional_name || currentProfile?.full_name || "",
+    professional_registration: record?.professional_registration || currentProfile?.professional_registration || "",
+    sst: record?.sst || currentProfile?.sst || "",
     signature_professional: record?.signature_professional || "",
   })
 
@@ -197,6 +212,7 @@ export function ClinicalRecordForm({
         exam_date: formData.exam_date,
         exam_type: formData.exam_type,
         consultation_reason: formData.consultation_reason || null,
+        sst: formData.sst || null,
 
         personal_history: formData.personal_history,
         personal_history_other: formData.personal_history_other || null,
@@ -419,6 +435,10 @@ export function ClinicalRecordForm({
                 <div className="space-y-2">
                   <Label>Registro Profesional / T.P.</Label>
                   <Input value={formData.professional_registration} onChange={(e) => updateField("professional_registration", e.target.value)} placeholder="TP 12345" disabled={loading} />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>SST</Label>
+                  <Input value={formData.sst} onChange={(e) => updateField("sst", e.target.value)} placeholder="Especialidad / SST" disabled={loading} />
                 </div>
               </CardContent>
             </Card>

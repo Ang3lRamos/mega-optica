@@ -146,6 +146,7 @@ export interface ClinicalRecord {
   // Profesional y firmas
   professional_name: string | null
   professional_registration: string | null
+  sst: string | null
   signature_professional: string | null
   signature_patient: string | null
 
@@ -194,10 +195,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, {
   optometra: {
     canCreatePatients: true,
     canEditPatients: true,
-    canDeletePatients: false,
+    canDeletePatients: true,
     canCreateRecords: true,
     canEditRecords: true,
-    canDeleteRecords: false,
+    canDeleteRecords: true,
     canManageUsers: false
   },
   administrador: {

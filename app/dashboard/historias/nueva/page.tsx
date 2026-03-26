@@ -9,7 +9,14 @@ export default async function NuevaHistoriaPage({
   const params = await searchParams
   const supabase = await createClient()
 
-  // Get patient if pre-selected
+  // Obtener perfil del usuario actual
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, professional_registration, sst, role")
+    .eq("id", user!.id)
+    .single()
+
   let patient = null
   if (params.paciente) {
     const { data } = await supabase
@@ -20,7 +27,6 @@ export default async function NuevaHistoriaPage({
     patient = data
   }
 
-  // Get all patients for dropdown
   const { data: patients } = await supabase
     .from("patients")
     .select("id, full_name, identification_number")
@@ -40,6 +46,7 @@ export default async function NuevaHistoriaPage({
       <ClinicalRecordForm
         patients={patients || []}
         selectedPatient={patient}
+        currentProfile={profile}
       />
     </div>
   )

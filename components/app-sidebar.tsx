@@ -83,21 +83,20 @@ export function AppSidebar({ profile }: AppSidebarProps) {
     },
   ]
 
-  const adminItems = [
-    {
-      title: "Usuarios",
-      url: "/dashboard/usuarios",
-      icon: UserCog,
-      show: permissions.canManageUsers,
-    },
-    {
-      title: "Configuración",
-      url: "/dashboard/configuracion",
-      icon: Settings,
-      show: permissions.canManageUsers,
-    },
-  ]
-
+const adminItems = [
+  {
+    title: "Usuarios",
+    url: "/dashboard/usuarios",
+    icon: UserCog,
+    show: permissions.canManageUsers,
+  },
+  {
+    title: "Configuración",
+    url: "/dashboard/configuracion",
+    icon: Settings,
+    show: permissions.canManageUsers || profile.role === "optometra",
+  },
+]
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
