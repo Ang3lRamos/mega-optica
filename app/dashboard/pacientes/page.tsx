@@ -1,28 +1,12 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Plus, Eye, FileText, Pencil } from "lucide-react"
-import { PatientsSearch } from "@/components/patients-search"
+import { Plus } from "lucide-react"
 import { ROLE_PERMISSIONS } from "@/lib/types"
+import { PatientsList } from "@/components/patients-list"
 
-export default async function PacientesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>
-}) {
-  const params = await searchParams
+export default async function PacientesPage() {
   const supabase = await createClient()
-  const searchQuery = params.q || ""
 
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
@@ -33,18 +17,11 @@ export default async function PacientesPage({
 
   const permissions = ROLE_PERMISSIONS[profile?.role ?? "recepcionista"]
 
-  let query = supabase
+  const { data: patients } = await supabase
     .from("patients")
     .select("*")
     .order("created_at", { ascending: false })
-
-  if (searchQuery) {
-    query = query.or(
-      `full_name.ilike.%${searchQuery}%,identification_number.ilike.%${searchQuery}%`
-    )
-  }
-
-  const { data: patients } = await query.limit(50)
+    .limit(100)
 
   return (
     <div className="space-y-6">
@@ -63,101 +40,10 @@ export default async function PacientesPage({
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Pacientes</CardTitle>
-          <CardDescription>
-            {patients?.length || 0} pacientes encontrados
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <PatientsSearch defaultValue={searchQuery} />
-          </div>
-
-          {patients && patients.length > 0 ? (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Identificación</TableHead>
-                    <TableHead>Nombre Completo</TableHead>
-                    <TableHead className="hidden md:table-cell">Género</TableHead>
-                    <TableHead className="hidden md:table-cell">Empresa</TableHead>
-                    <TableHead className="hidden lg:table-cell">Teléfono</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {patients.map((patient) => (
-                    <TableRow key={patient.id}>
-                      <TableCell>
-                        <div>
-                          <span className="text-xs text-muted-foreground">
-                            {patient.identification_type}
-                          </span>
-                          <p className="font-medium">{patient.identification_number}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{patient.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {patient.age} años
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge variant="outline">
-                          {patient.gender === "M" ? "Masculino" : "Femenino"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {patient.company || "-"}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        {patient.phone || "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/dashboard/pacientes/${patient.id}`}>
-                              <Eye className="size-4" />
-                              <span className="sr-only">Ver</span>
-                            </Link>
-                          </Button>
-                          {permissions.canEditPatients && (
-                            <Button variant="ghost" size="icon" asChild>
-                              <Link href={`/dashboard/pacientes/${patient.id}/editar`}>
-                                <Pencil className="size-4" />
-                                <span className="sr-only">Editar</span>
-                              </Link>
-                            </Button>
-                          )}
-                          {permissions.canCreateRecords && (
-                            <Button variant="ghost" size="icon" asChild>
-                              <Link href={`/dashboard/historias/nueva?paciente=${patient.id}`}>
-                                <FileText className="size-4" />
-                                <span className="sr-only">Nueva Historia</span>
-                              </Link>
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="flex h-32 items-center justify-center text-muted-foreground">
-              {searchQuery
-                ? "No se encontraron pacientes con esos criterios"
-                : "No hay pacientes registrados"}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <PatientsList
+        patients={patients || []}
+        permissions={permissions}
+      />
     </div>
   )
 }
