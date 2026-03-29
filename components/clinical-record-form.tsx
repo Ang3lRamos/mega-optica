@@ -95,6 +95,7 @@ export function ClinicalRecordForm({
     personal_history_other: record?.personal_history_other || "",
     family_history: record?.family_history || [] as string[],
     family_history_other: record?.family_history_other || "",
+    occupational_history_other: record?.occupational_history_other || "",
 
     uses_protection: record?.uses_protection || false,
     protection_type: record?.protection_type || "",
@@ -215,6 +216,7 @@ export function ClinicalRecordForm({
         uses_protection: formData.uses_protection,
         protection_type: formData.protection_type || null,
         occupational_exposures: formData.occupational_exposures,
+        occupational_history_other: formData.occupational_history_other || null,
         previous_exam: formData.previous_exam,
         previous_exam_date: formData.previous_exam_date || null,
         has_prescribed_lenses: formData.has_prescribed_lenses,
@@ -517,6 +519,16 @@ export function ClinicalRecordForm({
                   ))}
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>Otros antecedentes ocupacionales</Label>
+                <Textarea
+                  value={formData.occupational_history_other}
+                  onChange={(e) => updateField("occupational_history_other", e.target.value)}
+                  placeholder="Otros antecedentes relevantes..."
+                  rows={2}
+                  disabled={loading}
+                />
+              </div>
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Switch id="previous_exam" checked={formData.previous_exam} onCheckedChange={(v) => updateField("previous_exam", v)} />
@@ -759,9 +771,9 @@ export function ClinicalRecordForm({
                   <thead>
                     <tr className="border-b">
                       <th className="p-2 text-left w-12"></th>
-                      <th className="p-2 text-center">K1</th>
-                      <th className="p-2 text-center">K2</th>
-                      <th className="p-2 text-center">Eje</th>
+                      <th className="p-2 text-center"></th>
+                      <th className="p-2 text-center"></th>
+                      <th className="p-2 text-center"></th>
                     </tr>
                   </thead>
                   <tbody>

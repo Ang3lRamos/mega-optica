@@ -118,11 +118,11 @@ export function RecordsList({ records, canDelete }: RecordsListProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" asChild>
+                        {/* <Button variant="ghost" size="icon" asChild>
                           <Link href={`/dashboard/historias/${record.id}`}>
                             <Eye className="size-4" />
                           </Link>
-                        </Button>
+                        </Button> */}
                         <Button variant="ghost" size="icon" asChild>
                           <Link href={`/dashboard/historias/${record.id}/editar`}>
                             <Edit className="size-4" />

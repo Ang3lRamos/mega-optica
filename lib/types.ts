@@ -76,6 +76,7 @@ export interface ClinicalRecord {
   current_ocular_symptoms: boolean
   current_symptoms: boolean
   symptoms_details: string | null
+  occupational_history_other: string | null
 
   // Agudeza visual
   visual_acuity: VisualAcuity

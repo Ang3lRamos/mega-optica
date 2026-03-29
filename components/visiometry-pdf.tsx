@@ -248,6 +248,14 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               <Text style={styles.label}>Sintomatología actual</Text>
               <Text style={styles.value}>{record.current_symptoms ? record.symptoms_details || "Sí" : "No"}</Text>
             </View>
+            {record.occupational_history_other && (
+            <View style={styles.row}>
+              <View style={{ width: "100%" }}>
+                <Text style={styles.label}>Otros antecedentes ocupacionales</Text>
+                <Text style={styles.value}>{record.occupational_history_other}</Text>
+              </View>
+            </View>
+          )}
           </View>
         </View>
 
@@ -379,9 +387,9 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={styles.tableCellLabel}></Text>
-              <Text style={styles.tableCell}>K1</Text>
-              <Text style={styles.tableCell}>K2</Text>
-              <Text style={styles.tableCell}>Eje</Text>
+              <Text style={styles.tableCell}></Text>
+              <Text style={styles.tableCell}></Text>
+              <Text style={styles.tableCell}></Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabel}>OD</Text>
