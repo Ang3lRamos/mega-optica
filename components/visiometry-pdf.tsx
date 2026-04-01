@@ -223,7 +223,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
           </View>
           <View style={styles.row}>
             <View style={styles.col3}>
-              <Text style={styles.label}>Cargo / Tiempo</Text>
+              <Text style={styles.label}>Cargo / Empresa</Text>
               <Text style={styles.value}>{record.time_in_job || "-"}</Text>
             </View>
             <View style={styles.col3}>
@@ -248,15 +248,15 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               <Text style={styles.label}>Sintomatología actual</Text>
               <Text style={styles.value}>{record.current_symptoms ? record.symptoms_details || "Sí" : "No"}</Text>
             </View>
-            {record.occupational_history_other && (
-            <View style={styles.row}>
+          </View>
+          {record.occupational_history_other && (
+            <View style={[styles.row, { marginTop: 3 }]}>
               <View style={{ width: "100%" }}>
                 <Text style={styles.label}>Otros antecedentes ocupacionales</Text>
                 <Text style={styles.value}>{record.occupational_history_other}</Text>
               </View>
             </View>
           )}
-          </View>
         </View>
 
         {/* Agudeza Visual */}
@@ -273,18 +273,18 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabel}>OD (Derecho)</Text>
-              <Text style={styles.tableCell}>{va?.od_sin_correccion_lejana || "-"}</Text>
-              <Text style={styles.tableCell}>{va?.od_con_correccion_lejana || "-"}</Text>
-              <Text style={styles.tableCell}>{va?.od_sin_correccion_cercana || "-"}</Text>
-              <Text style={styles.tableCell}>{va?.od_con_correccion_cercana || "-"}</Text>
+              <Text style={styles.tableCell}>{record.od_far_without_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.od_far_with_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.od_near_without_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.od_near_with_correction || "-"}</Text>
               <Text style={styles.tableCell}>{record.ph_od || "-"}</Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableCellLabel}>OI (Izquierdo)</Text>
-              <Text style={styles.tableCell}>{va?.oi_sin_correccion_lejana || "-"}</Text>
-              <Text style={styles.tableCell}>{va?.oi_con_correccion_lejana || "-"}</Text>
-              <Text style={styles.tableCell}>{va?.oi_sin_correccion_cercana || "-"}</Text>
-              <Text style={styles.tableCell}>{va?.oi_con_correccion_cercana || "-"}</Text>
+              <Text style={styles.tableCell}>{record.oi_far_without_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.oi_far_with_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.oi_near_without_correction || "-"}</Text>
+              <Text style={styles.tableCell}>{record.oi_near_with_correction || "-"}</Text>
               <Text style={styles.tableCell}>{record.ph_oi || "-"}</Text>
             </View>
             <View style={styles.tableRow}>

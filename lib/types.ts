@@ -45,6 +45,10 @@ export interface VisualAcuity {
   od_con_correccion_cercana: string
   oi_sin_correccion_cercana: string
   oi_con_correccion_cercana: string
+  ao_sin_correccion_lejana: string
+  ao_con_correccion_lejana: string
+  ao_sin_correccion_cercana: string
+  ao_con_correccion_cercana: string
 }
 
 export interface ClinicalRecord {
@@ -79,9 +83,17 @@ export interface ClinicalRecord {
   occupational_history_other: string | null
 
   // Agudeza visual
-  visual_acuity: VisualAcuity
+  visual_acuity: VisualAcuity  // puedes dejar esto o quitarlo, ya no viene de BD
   ph_od: string | null
   ph_oi: string | null
+  od_far_without_correction: string | null
+  od_far_with_correction: string | null
+  od_near_without_correction: string | null
+  od_near_with_correction: string | null
+  oi_far_without_correction: string | null
+  oi_far_with_correction: string | null
+  oi_near_without_correction: string | null
+  oi_near_with_correction: string | null
   ao_far_without_correction: string | null
   ao_far_with_correction: string | null
   ao_near_without_correction: string | null
