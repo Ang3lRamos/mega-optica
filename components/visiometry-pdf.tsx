@@ -205,6 +205,8 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
         {/* Antecedentes */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>ANTECEDENTES</Text>
+          
+          {/* Personales y Familiares */}
           <View style={styles.row}>
             <View style={styles.col2}>
               <Text style={styles.label}>Personales</Text>
@@ -221,44 +223,72 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               </Text>
             </View>
           </View>
+
+          {/* Cargo, Empresa, Tiempo */}
           <View style={styles.row}>
-            <View style={styles.row}>
-              <View style={styles.col3}>
-                <Text style={styles.label}>Cargo</Text>
-                <Text style={styles.value}>{record.time_in_position || "-"}</Text>
-              </View>
-              <View style={styles.col3}>
-                <Text style={styles.label}>Empresa</Text>
-                <Text style={styles.value}>{record.protection_type || "-"}</Text>
-              </View>
-              <View style={styles.col3}>
-                <Text style={styles.label}>Tiempo en el cargo</Text>
-                <Text style={styles.value}>{record.time_in_cargo || "-"}</Text>
-              </View>
+            <View style={styles.col3}>
+              <Text style={styles.label}>Cargo</Text>
+              <Text style={styles.value}>{record.time_in_position || "-"}</Text>
             </View>
             <View style={styles.col3}>
-              <Text style={styles.label}>Exposiciones</Text>
+              <Text style={styles.label}>Empresa</Text>
+              <Text style={styles.value}>{record.protection_type || "-"}</Text>
+            </View>
+            <View style={styles.col3}>
+              <Text style={styles.label}>Tiempo en el cargo</Text>
+              <Text style={styles.value}>{record.time_in_cargo || "-"}</Text>
+            </View>
+          </View>
+
+          {/* Exposiciones */}
+          <View style={styles.row}>
+            <View style={{ width: "100%" }}>
+              <Text style={styles.label}>Exposiciones ocupacionales</Text>
               <Text style={styles.value}>
                 {(record.occupational_exposures as string[] || []).join(", ") || "-"}
+              </Text>
+            </View>
+          </View>
+
+          {/* Visiometría anterior, Lentes, Cirugía */}
+          <View style={styles.row}>
+            <View style={styles.col3}>
+              <Text style={styles.label}>Visiometría anterior</Text>
+              <Text style={styles.value}>
+                {record.previous_exam
+                  ? `Sí${record.previous_exam_date ? ` - ${new Date(record.previous_exam_date).toLocaleDateString("es-CO")}` : ""}`
+                  : "No"}
               </Text>
             </View>
             <View style={styles.col3}>
               <Text style={styles.label}>Lentes formulados</Text>
               <Text style={styles.value}>
-                {record.has_prescribed_lenses ? `Sí - ${record.lens_usage?.replace(/_/g, " ") || ""}` : "No"}
+                {record.has_prescribed_lenses
+                  ? `Sí - ${record.lens_usage?.replace(/_/g, " ") || ""}`
+                  : "No"}
+              </Text>
+            </View>
+            <View style={styles.col3}>
+              <Text style={styles.label}>Cirugía ocular</Text>
+              <Text style={styles.value}>
+                {record.ocular_surgery
+                  ? `${record.surgery_details || "Sí"}${record.surgery_date ? ` (${new Date(record.surgery_date).toLocaleDateString("es-CO")})` : ""}`
+                  : "No"}
               </Text>
             </View>
           </View>
+
+          {/* Sintomatología */}
           <View style={styles.row}>
-            <View style={styles.col2}>
-              <Text style={styles.label}>Cirugía ocular</Text>
-              <Text style={styles.value}>{record.ocular_surgery ? record.surgery_details || "Sí" : "No"}</Text>
-            </View>
-            <View style={styles.col2}>
-              <Text style={styles.label}>Sintomatología actual</Text>
-              <Text style={styles.value}>{record.current_symptoms ? record.symptoms_details || "Sí" : "No"}</Text>
+            <View style={{ width: "100%" }}>
+              <Text style={styles.label}>Sintomatología ocular actual</Text>
+              <Text style={styles.value}>
+                {record.current_symptoms ? record.symptoms_details || "Sí" : "No"}
+              </Text>
             </View>
           </View>
+
+          {/* Otros antecedentes ocupacionales */}
           {record.occupational_history_other && (
             <View style={[styles.row, { marginTop: 3 }]}>
               <View style={{ width: "100%" }}>
