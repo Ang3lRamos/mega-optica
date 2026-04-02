@@ -68,6 +68,7 @@ export interface ClinicalRecord {
   // Antecedentes ocupacionales
   uses_protection: boolean
   protection_type: string | null
+  time_in_cargo: string | null
   time_in_job: string | null
   occupational_exposures: string[]
   previous_exam: boolean

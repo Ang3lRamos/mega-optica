@@ -222,9 +222,19 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
             </View>
           </View>
           <View style={styles.row}>
-            <View style={styles.col3}>
-              <Text style={styles.label}>Cargo / Empresa</Text>
-              <Text style={styles.value}>{record.time_in_job || "-"}</Text>
+            <View style={styles.row}>
+              <View style={styles.col3}>
+                <Text style={styles.label}>Cargo</Text>
+                <Text style={styles.value}>{record.time_in_position || "-"}</Text>
+              </View>
+              <View style={styles.col3}>
+                <Text style={styles.label}>Empresa</Text>
+                <Text style={styles.value}>{record.protection_type || "-"}</Text>
+              </View>
+              <View style={styles.col3}>
+                <Text style={styles.label}>Tiempo en el cargo</Text>
+                <Text style={styles.value}>{record.time_in_cargo || "-"}</Text>
+              </View>
             </View>
             <View style={styles.col3}>
               <Text style={styles.label}>Exposiciones</Text>

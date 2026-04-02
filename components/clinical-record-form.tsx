@@ -99,7 +99,8 @@ export function ClinicalRecordForm({
 
     uses_protection: record?.uses_protection || false,
     protection_type: record?.protection_type || "",
-    time_in_job: record?.time_in_job || "",
+    time_in_job: record?.time_in_position || "",
+    time_in_cargo: record?.time_in_cargo || "",
     occupational_exposures: record?.occupational_exposures || [] as string[],
     previous_exam: record?.previous_exam || false,
     previous_exam_date: record?.previous_exam_date || "",
@@ -213,6 +214,7 @@ export function ClinicalRecordForm({
         family_history_other: formData.family_history_other || null,
 
         time_in_position: formData.time_in_job,
+        time_in_cargo: formData.time_in_cargo || null,
         uses_protection: formData.uses_protection,
         protection_type: formData.protection_type || null,
         occupational_exposures: formData.occupational_exposures,
@@ -505,7 +507,12 @@ export function ClinicalRecordForm({
                 </div>
                 <div className="space-y-2">
                   <Label>Tiempo en el cargo</Label>
-                  <Input placeholder="2 años, 6 meses..." disabled={loading} />
+                  <Input 
+                    value={formData.time_in_cargo}
+                    onChange={(e) => updateField("time_in_cargo", e.target.value)}
+                    placeholder="2 años, 6 meses..." 
+                    disabled={loading} 
+                  />
                 </div>
               </div>
               <div className="space-y-2">
