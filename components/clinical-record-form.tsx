@@ -109,7 +109,7 @@ export function ClinicalRecordForm({
     ocular_surgery: record?.ocular_surgery || false,
     surgery_details: record?.surgery_details || "",
     surgery_date: record?.surgery_date || "",
-    current_ocular_symptoms: record?.current_ocular_symptoms || false,
+    current_ocular_symptoms: record?.current_symptoms || false,
     symptoms_details: record?.symptoms_details || "",
 
     visual_acuity: {
