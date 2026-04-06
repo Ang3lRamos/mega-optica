@@ -19,9 +19,10 @@ export default async function DashboardPage() {
   const { count: patientsCount } = await supabase
     .from("patients")
     .select("*", { count: "exact", head: true })
+    .is("deleted_at", null)
 
   const { count: recordsCount } = permissions.canCreateRecords
-    ? await supabase.from("clinical_records").select("*", { count: "exact", head: true })
+    ? await supabase.from("clinical_records").select("*", { count: "exact", head: true }) .is("deleted_at", null)
     : { count: null }
 
   const today = new Date().toISOString().split("T")[0]
@@ -29,6 +30,7 @@ export default async function DashboardPage() {
     ? await supabase
         .from("clinical_records")
         .select("*", { count: "exact", head: true })
+        .is("deleted_at", null)
         .gte("exam_date", today)
         .lt("exam_date", `${today}T23:59:59`)
     : { count: null }
@@ -37,6 +39,7 @@ export default async function DashboardPage() {
     ? await supabase
         .from("clinical_records")
         .select(`id, exam_date, exam_type, patients (full_name, identification_number)`)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(5)
     : { data: null }
