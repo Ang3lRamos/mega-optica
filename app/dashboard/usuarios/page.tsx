@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
+import { createClient as createServerClient } from "@/lib/supabase/server"  
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -32,6 +33,8 @@ export default async function UsuariosPage() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
+  const supabase = await createServerClient()
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
 
   const { data: profiles } = await supabaseAdmin
     .from("profiles")
@@ -106,7 +109,9 @@ export default async function UsuariosPage() {
                             Editar
                           </Link>
                         </Button>
-                        <DeleteUserButton id={profile.id} name={profile.full_name} />
+                        {profile.id !== currentUser?.id && profile.role !== "administrador" && (
+                          <DeleteUserButton id={profile.id} name={profile.full_name} />
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

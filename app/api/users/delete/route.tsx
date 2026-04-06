@@ -11,6 +11,17 @@ export async function POST(request: Request) {
 
     const { id } = await request.json()
 
+    // Verificar que no sea admin
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", id)
+      .single()
+
+    if (profile?.role === "administrador") {
+      return NextResponse.json({ error: "No se puede eliminar un administrador" }, { status: 403 })
+    }
+
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .delete()
