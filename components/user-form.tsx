@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
-import { AlertCircle, Save, ArrowLeft } from "lucide-react"
+import { AlertCircle, Save, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 
 interface Profile {
@@ -34,6 +34,7 @@ export function UserForm({ profile, isEdit = false }: UserFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || "",
@@ -121,16 +122,27 @@ export function UserForm({ profile, isEdit = false }: UserFormProps) {
               <Label htmlFor="password">
                 {isEdit ? "Nueva Contraseña (dejar vacío para no cambiar)" : "Contraseña"}
               </Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => updateField("password", e.target.value)}
-                required={!isEdit}
-                minLength={isEdit && !formData.password ? undefined : 8}
-                disabled={loading}
-                placeholder={isEdit ? "Dejar vacío para mantener" : "Mínimo 8 caracteres"}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => updateField("password", e.target.value)}
+                  required={!isEdit}
+                  minLength={isEdit && !formData.password ? undefined : 8}
+                  disabled={loading}
+                  placeholder={isEdit ? "Dejar vacío para mantener" : "Mínimo 8 caracteres"}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  disabled={loading}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
