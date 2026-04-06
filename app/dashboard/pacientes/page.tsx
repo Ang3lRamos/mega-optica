@@ -16,10 +16,12 @@ export default async function PacientesPage() {
     .single()
 
   const permissions = ROLE_PERMISSIONS[profile?.role ?? "recepcionista"]
+  console.log("role:", profile?.role, "permissions:", permissions)
 
   const { data: patients } = await supabase
     .from("patients")
     .select("*")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(100)
 

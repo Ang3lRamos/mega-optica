@@ -301,12 +301,18 @@ export function ClinicalRecordForm({
           .from("clinical_records")
           .update({ ...dataToSave, updated_at: new Date().toISOString() })
           .eq("id", record.id)
-        if (updateError) throw updateError
+        if (updateError) {
+          console.error("Update error:", JSON.stringify(updateError))
+          throw updateError
+        }
       } else {
         const { error: insertError } = await supabase
           .from("clinical_records")
           .insert(dataToSave)
-        if (insertError) throw insertError
+        if (insertError) {
+          console.error("Insert error:", JSON.stringify(insertError))
+          throw insertError
+        }
       }
 
       router.push("/dashboard/historias")

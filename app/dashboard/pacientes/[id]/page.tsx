@@ -46,6 +46,7 @@ export default async function PacienteDetailPage({
         full_name
       )
     `)
+    .is("deleted_at", null)
     .eq("patient_id", id)
     .order("exam_date", { ascending: false })
 

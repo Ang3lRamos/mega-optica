@@ -30,6 +30,7 @@ export default async function NuevaHistoriaPage({
   const { data: patients } = await supabase
     .from("patients")
     .select("id, full_name, identification_number")
+    .is("deleted_at", null)
     .order("full_name")
 
   return (

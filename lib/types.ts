@@ -25,6 +25,7 @@ export interface Patient {
   created_by: string
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export type ExamType = 
@@ -58,6 +59,7 @@ export interface ClinicalRecord {
   exam_date: string
   exam_type: ExamType
   consultation_reason: string | null
+  deleted_at: string | null
 
   // Antecedentes personales
   personal_history: string[]

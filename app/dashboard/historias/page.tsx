@@ -34,6 +34,7 @@ export default async function HistoriasPage() {
         full_name
       )
     `)
+    .is("deleted_at", null)
     .order("exam_date", { ascending: false })
     .limit(100)
 

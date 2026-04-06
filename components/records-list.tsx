@@ -53,7 +53,10 @@ export function RecordsList({ records, canDelete }: RecordsListProps) {
   const handleDelete = async (id: string) => {
     setDeletingId(id)
     try {
-      await supabase.from("clinical_records").delete().eq("id", id)
+      await supabase
+        .from("clinical_records")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id)
       router.refresh()
     } finally {
       setDeletingId(null)

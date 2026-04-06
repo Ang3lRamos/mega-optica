@@ -55,7 +55,10 @@ export function PatientsList({ patients, permissions }: PatientsListProps) {
   const handleDelete = async (id: string) => {
     setDeletingId(id)
     try {
-      await supabase.from("patients").delete().eq("id", id)
+      await supabase
+        .from("patients")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id)
       router.refresh()
     } finally {
       setDeletingId(null)
@@ -153,7 +156,7 @@ export function PatientsList({ patients, permissions }: PatientsListProps) {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>¿Eliminar paciente?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Esta acción eliminará permanentemente a <strong>{patient.full_name}</strong> y todos sus registros asociados. No se puede deshacer.
+                                  Esta acción desactivará a <strong>{patient.full_name}</strong> y no aparecerá más en el sistema.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
