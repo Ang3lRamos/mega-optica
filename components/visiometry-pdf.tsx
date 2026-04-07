@@ -423,7 +423,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
 
         {/* Queratometría */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>QUERATOMETRÍA</Text>
+          <Text style={styles.sectionTitle}>OFTALMOSCOPIA</Text>
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={styles.tableCellLabel}></Text>
@@ -536,9 +536,10 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
             <View style={styles.signatureLine}>
               <Text style={{ fontWeight: "bold" }}>PROFESIONAL</Text>
               <Text>{record.professional_name || optometrist.full_name}</Text>
-              <Text style={{ fontSize: 7 }}>
+              <Text style={{ fontSize: 9 }}>
                 {record.professional_registration ? `TP: ${record.professional_registration}` : "Optómetra"}
               </Text>
+              <Text style={{ fontWeight: "bold" }}>Especialista en Seguridad y Salud en el Trabajo</Text>
               {record.sst && (
                 <Text style={{ fontSize: 7 }}>SST: {record.sst}</Text>
               )}

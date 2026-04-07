@@ -777,7 +777,7 @@ export function ClinicalRecordForm({
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Queratometría</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Oftalmoscopia</CardTitle></CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
