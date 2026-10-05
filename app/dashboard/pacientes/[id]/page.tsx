@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table"
 import { ArrowLeft, Edit, FileText, Plus, Eye } from "lucide-react"
 import { EXAM_TYPE_LABELS, ROLE_PERMISSIONS } from "@/lib/types"
+import { formatDate } from "@/lib/utils"
 
 export default async function PacienteDetailPage({
   params,
@@ -103,7 +104,7 @@ export default async function PacienteDetailPage({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Fecha de Nacimiento</p>
-                <p className="font-medium">{new Date(patient.birth_date).toLocaleDateString("es-CO")}</p>
+                <p className="font-medium">{formatDate(patient.birth_date)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Teléfono</p>
@@ -134,7 +135,7 @@ export default async function PacienteDetailPage({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Fecha de Registro</p>
-              <p className="font-medium">{new Date(patient.created_at).toLocaleDateString("es-CO")}</p>
+              <p className="font-medium">{formatDate(patient.created_at)}</p>
             </div>
           </CardContent>
         </Card>
@@ -164,7 +165,7 @@ export default async function PacienteDetailPage({
                     return (
                       <TableRow key={record.id}>
                         <TableCell>
-                          {new Date(record.exam_date).toLocaleDateString("es-CO")}
+                          {formatDate(record.exam_date)}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">

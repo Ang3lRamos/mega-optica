@@ -18,6 +18,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { Eye, FileDown, Search, Trash2, Edit } from "lucide-react"
 import { EXAM_TYPE_LABELS } from "@/lib/types"
+import { formatDate } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 
 interface Record {
@@ -98,7 +99,7 @@ export function RecordsList({ records, canDelete }: RecordsListProps) {
                 {filtered.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>
-                      {new Date(record.exam_date).toLocaleDateString("es-CO")}
+                      {formatDate(record.exam_date)}
                     </TableCell>
                     <TableCell>
                       <div>
@@ -147,7 +148,7 @@ export function RecordsList({ records, canDelete }: RecordsListProps) {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>¿Eliminar historia clínica?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Esta acción eliminará permanentemente el registro de <strong>{record.patients?.full_name}</strong> del {new Date(record.exam_date).toLocaleDateString("es-CO")}. No se puede deshacer.
+                                  Esta acción eliminará permanentemente el registro de <strong>{record.patients?.full_name}</strong> del {formatDate(record.exam_date)}. No se puede deshacer.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

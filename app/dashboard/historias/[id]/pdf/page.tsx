@@ -11,6 +11,7 @@ import { ArrowLeft, Download, Eye } from "lucide-react"
 import { ClinicalRecord, Patient, Profile } from "@/lib/types"
 import { PDFDownloadButton } from "@/components/pdf-download-button"
 import { PDFViewerWrapper } from "@/components/pdf-viewer-wrapper"
+import { formatDate } from "@/lib/utils"
 
 export default function PDFPage() {
   const params = useParams()
@@ -144,7 +145,7 @@ export default function PDFPage() {
               <div className="text-xs text-muted-foreground">
                 <p>Paciente: {patient.full_name}</p>
                 <p>{patient.identification_type}: {patient.identification_number}</p>
-                <p>Fecha: {new Date(record.exam_date).toLocaleDateString("es-CO")}</p>
+                <p>Fecha: {formatDate(record.exam_date)}</p>
               </div>
             </div>
           </CardContent>

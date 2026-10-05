@@ -10,6 +10,7 @@ import {
   Image,
 } from "@react-pdf/renderer"
 import { ClinicalRecord, Patient, Profile, EXAM_TYPE_LABELS } from "@/lib/types"
+import { formatDate } from "@/lib/utils"
 
 Font.register({
   family: "Helvetica",
@@ -143,7 +144,7 @@ interface VisiometryPDFProps {
 }
 
 export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFProps) {
-  const examDate = new Date(record.exam_date)
+  const examDate = formatDate(record.exam_date)
   const va = record.visual_acuity
 
   return (
@@ -158,7 +159,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
             <Text style={styles.nit}>NIT: 92521731-6</Text>
           </View>
           <View style={{ textAlign: "right" }}>
-            <Text style={{ fontSize: 9 }}>Fecha: {examDate.toLocaleDateString("es-CO")}</Text>
+            <Text style={{ fontSize: 9 }}>Fecha: {examDate}</Text>
             <Text style={{ fontSize: 9 }}>Tipo: {EXAM_TYPE_LABELS[record.exam_type as keyof typeof EXAM_TYPE_LABELS]}</Text>
           </View>
         </View>
@@ -256,7 +257,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               <Text style={styles.label}>Visiometría anterior</Text>
               <Text style={styles.value}>
                 {record.previous_exam
-                  ? `Sí${record.previous_exam_date ? ` - ${new Date(record.previous_exam_date).toLocaleDateString("es-CO")}` : ""}`
+                  ? `Sí${record.previous_exam_date ? ` - ${formatDate(record.previous_exam_date)}` : ""}`
                   : "No"}
               </Text>
             </View>
@@ -272,7 +273,7 @@ export function VisiometryPDF({ record, patient, optometrist }: VisiometryPDFPro
               <Text style={styles.label}>Cirugía ocular</Text>
               <Text style={styles.value}>
                 {record.ocular_surgery
-                  ? `${record.surgery_details || "Sí"}${record.surgery_date ? ` (${new Date(record.surgery_date).toLocaleDateString("es-CO")})` : ""}`
+                  ? `${record.surgery_details || "Sí"}${record.surgery_date ? ` (${formatDate(record.surgery_date)})` : ""}`
                   : "No"}
               </Text>
             </View>

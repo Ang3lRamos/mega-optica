@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { UserPlus } from "lucide-react"
 import Link from "next/link"
 import { DeleteUserButton } from "@/components/delete-user-button"
+import { formatDate } from "@/lib/utils"
 
 const roleColors: Record<string, string> = {
   administrador: "bg-red-100 text-red-800",
@@ -100,7 +101,7 @@ export default async function UsuariosPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(profile.created_at).toLocaleDateString("es-CO")}
+                      {formatDate(profile.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, FileText, Calendar, Activity } from "lucide-react"
 import { ROLE_PERMISSIONS } from "@/lib/types"
+import { formatDate, todayLocal } from "@/lib/utils"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -25,14 +26,13 @@ export default async function DashboardPage() {
     ? await supabase.from("clinical_records").select("*", { count: "exact", head: true }) .is("deleted_at", null)
     : { count: null }
 
-  const today = new Date().toISOString().split("T")[0]
+  const today = todayLocal()
   const { count: todayRecords } = permissions.canCreateRecords
     ? await supabase
         .from("clinical_records")
         .select("*", { count: "exact", head: true })
         .is("deleted_at", null)
-        .gte("exam_date", today)
-        .lt("exam_date", `${today}T23:59:59`)
+        .eq("exam_date", today)
     : { count: null }
 
   const { data: recentRecords } = permissions.canCreateRecords
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
                             {examTypeLabels[record.exam_type] || record.exam_type}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(record.exam_date).toLocaleDateString("es-CO")}
+                            {formatDate(record.exam_date)}
                           </p>
                         </div>
                       </div>

@@ -22,6 +22,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
 import { AlertCircle, Save, ArrowLeft, ChevronRight, ChevronLeft, Upload } from "lucide-react"
 import { ExamType, EXAM_TYPE_LABELS, Patient, ClinicalRecord } from "@/lib/types"
+import { todayLocal } from "@/lib/utils"
 
 interface PatientOption {
   id: string
@@ -87,7 +88,7 @@ export function ClinicalRecordForm({
 
   const [formData, setFormData] = useState({
     patient_id: selectedPatient?.id || record?.patient_id || "",
-    exam_date: record?.exam_date || new Date().toISOString().split("T")[0],
+    exam_date: record?.exam_date || todayLocal(),
     exam_type: record?.exam_type || ("visiometria" as ExamType),
     consultation_reason: record?.consultation_reason || "",
 

@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Spinner } from "@/components/ui/spinner"
 import { AlertCircle, Save, ArrowLeft } from "lucide-react"
 import { Patient } from "@/lib/types"
+import { parseDateOnly } from "@/lib/utils"
 import Link from "next/link"
 import {
   Dialog,
@@ -54,7 +55,7 @@ export function PatientForm({ patient, isEdit = false }: PatientFormProps) {
 
   const calculateAge = (birthDate: string): number => {
     const today = new Date()
-    const birth = new Date(birthDate)
+    const birth = parseDateOnly(birthDate)
     let age = today.getFullYear() - birth.getFullYear()
     const monthDiff = today.getMonth() - birth.getMonth()
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
